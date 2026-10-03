@@ -1,115 +1,74 @@
-# PyFilesystem2
+# FS Next
 
-Python's Filesystem abstraction layer.
+A maintenance fork of [PyFilesystem2](https://github.com/PyFilesystem/pyfilesystem2)
+for modern Python. **Alpha release; use a fresh environment for evaluation.**
 
-[![PyPI version](https://img.shields.io/pypi/v/fs)](https://pypi.org/project/fs/)
-[![PyPI](https://img.shields.io/pypi/pyversions/fs.svg)](https://pypi.org/project/fs/)
-[![Downloads](https://pepy.tech/badge/fs/month)](https://pepy.tech/project/fs/)
-[![Build Status](https://img.shields.io/github/workflow/status/PyFilesystem/pyfilesystem2/Test/master?logo=github&cacheSeconds=600)](https://github.com/PyFilesystem/pyfilesystem2/actions?query=branch%3Amaster)
-[![Windows Build Status](https://img.shields.io/appveyor/build/willmcgugan/pyfilesystem2/master?logo=appveyor&cacheSeconds=600)](https://ci.appveyor.com/project/willmcgugan/pyfilesystem2)
-[![Coverage Status](https://img.shields.io/coveralls/github/PyFilesystem/pyfilesystem2/master?cacheSeconds=600)](https://coveralls.io/github/PyFilesystem/pyfilesystem2)
-[![Codacy Badge](https://img.shields.io/codacy/grade/30ad6445427349218425d93886ade9ee/master?logo=codacy)](https://www.codacy.com/app/will-mcgugan/pyfilesystem2?utm_source=github.com&utm_medium=referral&utm_content=PyFilesystem/pyfilesystem2&utm_campaign=Badge_Grade)
-[![Docs](https://img.shields.io/readthedocs/pyfilesystem2?maxAge=3600)](http://pyfilesystem2.readthedocs.io/en/stable/?badge=stable)
+FS Next retains the `fs` import and the upstream filesystem API. It is an
+independent fork, not an official PyFilesystem release. The original authors'
+MIT license and copyright notices are preserved in `LICENSE`.
 
-## Documentation
+## Current scope
 
-- ~~[Wiki](https://www.pyfilesystem.org)~~ (currently offline)
-- [API Documentation](https://pyfilesystem2.readthedocs.io/en/latest/)
-- [GitHub Repository](https://github.com/PyFilesystem/pyfilesystem2)
-- [Blog](https://www.willmcgugan.com/tag/fs/)
+- Python 3.10+ development target.
+- Local, memory, temporary, ZIP, and loopback FTP filesystems are tested.
+- Runtime no longer requires setuptools or `pkg_resources`.
+- Openers are discovered through `importlib.metadata` using the existing
+  `fs.opener` entry-point group. Namespace extensions use `pkgutil.extend_path`.
+- FS URL paths preserve their format on Python 3.14.
 
-## Introduction
+See [development status](docs/fs-next-status.md) for checks actually run and
+remaining work. A target version range is not a claim that every upstream
+feature or third-party plugin has been validated.
 
-Think of PyFilesystem's `FS` objects as the next logical step to
-Python's `file` objects. In the same way that file objects abstract a
-single file, FS objects abstract an entire filesystem.
+## Install
 
-Let's look at a simple piece of code as an example. The following
-function uses the PyFilesystem API to count the number of non-blank
-lines of Python code in a directory. It works _recursively_, so it will
-find `.py` files in all sub-directories.
-
-```python
-def count_python_loc(fs):
-    """Count non-blank lines of Python code."""
-    count = 0
-    for path in fs.walk.files(filter=['*.py']):
-        with fs.open(path) as python_file:
-            count += sum(1 for line in python_file if line.strip())
-    return count
+```sh
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+python -m pip install fs-next==0.1.0a1
 ```
 
-We can call `count_python_loc` as follows:
+## Develop locally
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[test]'
+python -m pytest tests -q
+```
+
+Use a new virtual environment. **Do not install `fs` and `fs-next` together:**
+both distributions write the `fs` package. Installing `fs-next` does not satisfy
+another distribution's `Requires-Dist: fs`; dependency migration must be handled
+explicitly. Arbitrary third-party plugin compatibility has not been established.
+
+## Example
 
 ```python
 from fs import open_fs
-projects_fs = open_fs('~/projects')
-print(count_python_loc(projects_fs))
+
+with open_fs("mem://") as storage:
+    storage.writetext("hello.txt", "Hello, FS Next")
+    print(storage.readtext("hello.txt"))
 ```
 
-The line `project_fs = open_fs('~/projects')` opens an FS object that
-maps to the `projects` directory in your home folder. That object is
-used by `count_python_loc` when counting lines of code.
+## Build
 
-To count the lines of Python code in a _zip file_, we can make the
-following change:
-
-```python
-projects_fs = open_fs('zip://projects.zip')
+```sh
+python -m pip install build twine
+python -m build
+python -m twine check dist/*
 ```
 
-Or to count the Python lines on an FTP server:
+This creates a wheel and source archive for `fs-next` version `0.1.0a1`.
+GitHub release tags must match the version (`v0.1.0a1`). The release workflow
+runs compatibility tests, builds artifacts, checks a fresh wheel installation,
+and uploads through PyPI Trusted Publishing. See [release instructions](docs/releasing.md).
 
-```python
-projects_fs = open_fs('ftp://ftp.example.org/projects')
-```
+## Upstream and documentation
 
-No changes to `count_python_loc` are necessary, because PyFileystem
-provides a simple consistent interface to anything that resembles a
-collection of files and directories. Essentially, it allows you to write
-code that is independent of where and how the files are physically
-stored.
-
-Contrast that with a version that purely uses the standard library:
-
-```python
-def count_py_loc(path):
-    count = 0
-    for root, dirs, files in os.walk(path):
-        for name in files:
-            if name.endswith('.py'):
-                with open(os.path.join(root, name), 'rt') as python_file:
-                    count += sum(1 for line in python_file if line.strip())
-    return count
-```
-
-This version is similar to the PyFilesystem code above, but would only
-work with the OS filesystem. Any other filesystem would require an
-entirely different API, and you would likely have to re-implement the
-directory walking functionality of `os.walk`.
-
-## Credits
-
-The following developers have contributed code and their time to this projects:
-
-- [Will McGugan](https://github.com/willmcgugan)
-- [Martin Larralde](https://github.com/althonos)
-- [Giampaolo Cimino](https://github.com/gpcimino)
-- [Geoff Jukes](https://github.com/geoffjukes)
-
-See [CONTRIBUTORS.md](https://github.com/PyFilesystem/pyfilesystem2/blob/master/CONTRIBUTORS.md)
-for a full list of contributors.
-
-PyFilesystem2 owes a massive debt of gratitude to the following
-developers who contributed code and ideas to the original version.
-
-- Ryan Kelly
-- Andrew Scheller
-- Ben Timby
-
-Apologies if I missed anyone, feel free to prompt me if your name is
-missing here.
-
-## Support
-
-If commercial support is required, please contact [Will McGugan](mailto:willmcgugan@gmail.com).
+- Source baseline: `77a8562785fc37cb2e30bdcd39c133097ba62dce`.
+- [Upstream README](docs/upstream-readme.md) retains project history and examples.
+- Existing `docs/source/` describes upstream behavior and has not yet been fully
+  adapted for this fork.
+- [Contribution guide](CONTRIBUTING.md).
