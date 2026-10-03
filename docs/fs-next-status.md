@@ -27,16 +27,21 @@
 
 On macOS arm64:
 
-- Python 3.14.7 full suite including FTP: **2,657 passed, 29 skipped**.
+- Python 3.14.7 full suite including FTP: **2,661 passed, 29 skipped**.
   Unraisable exceptions and unhandled thread exceptions are treated as errors.
   38 other warnings remain, chiefly inherited deprecated APIs, pyftpdlib UTC
   deprecations and anonymous write access in the loopback test server.
+- Coverage baseline: **92.80% statements, 85.91% branches** on macOS/Python
+  3.14.7; [scope and per-module results](coverage.md).
 - Python 3.10.20 focused core suite: 545 passed, 7 skipped.
 - Wheel and sdist build; `twine check` passes.
 - Fresh wheel installation outside the checkout checks MemoryFS, OSFS, ZIP,
   Unicode filenames and imports without setuptools/pkg_resources.
 - Regression fixtures test real `.dist-info` opener discovery and split namespace
   packages. These fixtures do not establish universal extension compatibility.
+
+[Release workflow 37130432144](https://github.com/kmsk99/fs-next/actions/runs/37130432144)
+passed all 9 OS/Python test jobs and both plugin probes.
 
 GitHub Actions runs the full suite on Linux, macOS and Windows with Python 3.10,
 3.12 and 3.14. Release publishing repeats that gate and verifies the installed
