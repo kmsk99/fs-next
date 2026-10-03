@@ -122,13 +122,17 @@ class TestWrapReadOnlySyspath(unittest.TestCase):
         self.assertReadOnly(fs.copy.copy_fs, self.src, self.ro)
 
     def test_copy_fs_if_newer(self):
-        self.assertReadOnly(fs.copy.copy_fs_if_newer, self.src, self.ro)
+        with self.assertWarns(DeprecationWarning):
+            self.assertReadOnly(fs.copy.copy_fs_if_newer, self.src, self.ro)
 
     def test_copy_file(self):
         self.assertReadOnly(fs.copy.copy_file, self.src, "foo", self.ro, "foo")
 
     def test_copy_file_if_newer(self):
-        self.assertReadOnly(fs.copy.copy_file_if_newer, self.src, "foo", self.ro, "foo")
+        with self.assertWarns(DeprecationWarning):
+            self.assertReadOnly(
+                fs.copy.copy_file_if_newer, self.src, "foo", self.ro, "foo"
+            )
 
     def test_copy_structure(self):
         self.assertReadOnly(fs.copy.copy_structure, self.src, self.ro)

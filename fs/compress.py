@@ -12,7 +12,7 @@ import six
 import tarfile
 import time
 import zipfile
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .enums import ResourceType
 from .errors import MissingInfoNamespace, NoSysPath
@@ -74,7 +74,7 @@ def write_zip(
             else:
                 # Otherwise, use the modified time from details
                 # namespace.
-                mt = info.modified or datetime.utcnow()
+                mt = info.modified or datetime.now(timezone.utc)
                 zip_time = (mt.year, mt.month, mt.day, mt.hour, mt.minute, mt.second)
 
             # NOTE(@althonos): typeshed's `zipfile.py` on declares

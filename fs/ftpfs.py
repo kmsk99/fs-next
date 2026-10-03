@@ -1,5 +1,4 @@
-"""Manage filesystems on remote FTP servers.
-"""
+"""Manage filesystems on remote FTP servers."""
 
 from __future__ import print_function, unicode_literals
 
@@ -865,7 +864,9 @@ class FTPFS(FS):
             with ftp_errors(self, path):
                 cmd = (
                     "MFMT "
-                    + datetime.datetime.utcfromtimestamp(mtime).strftime("%Y%m%d%H%M%S")
+                    + datetime.datetime.fromtimestamp(
+                        mtime, datetime.timezone.utc
+                    ).strftime("%Y%m%d%H%M%S")
                     + " "
                     + _encode(path, self.ftp.encoding)
                 )

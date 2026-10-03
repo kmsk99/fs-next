@@ -44,7 +44,7 @@ def _write_file(filepath, write_chars=1024):
 
 
 def _delay_file_utime(filepath, delta_sec):
-    utcnow = datetime.datetime.utcnow()
+    utcnow = datetime.datetime.now(datetime.timezone.utc)
     unix_timestamp = calendar.timegm(utcnow.timetuple())
     times = unix_timestamp + delta_sec, unix_timestamp + delta_sec
     os.utime(filepath, times)
@@ -173,7 +173,8 @@ class TestCopyIfNewer(unittest.TestCase):
         src_fs.makedir("foo2").touch("exists")
         src_fs.makedir("foo1").touch("test1.txt")
         src_fs.settimes(
-            "foo2/exists", datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            "foo2/exists",
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1),
         )
         self.assertTrue(
             fs.copy.copy_file_if(
@@ -418,7 +419,8 @@ class TestCopyIfOlder(unittest.TestCase):
         src_fs.makedir("foo2").touch("exists")
         src_fs.makedir("foo1").touch("test1.txt")
         src_fs.settimes(
-            "foo2/exists", datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+            "foo2/exists",
+            datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=1),
         )
         self.assertTrue(
             fs.copy.copy_file_if(

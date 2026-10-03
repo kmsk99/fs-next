@@ -86,22 +86,18 @@ def parse_line(line):
 def _parse_time(t, formats):
     for frmt in formats:
         try:
-            _t = time.strptime(t, frmt)
-            break
+            # LIST often omits the year. Supply it before parsing so leap
+            # days are validated against that year, not strptime's 1900.
+            value = t
+            if "%Y" not in frmt and "%y" not in frmt:
+                value = "{} {}".format(t, time.localtime().tm_year)
+                frmt += " %Y"
+            _t = time.strptime(value, frmt)
+            dt = datetime(*_t[:5], tzinfo=timezone.utc)
         except ValueError:
             continue
-    else:
-        return None
-
-    year = _t.tm_year if _t.tm_year != 1900 else time.localtime().tm_year
-    month = _t.tm_mon
-    day = _t.tm_mday
-    hour = _t.tm_hour
-    minutes = _t.tm_min
-    dt = datetime(year, month, day, hour, minutes, tzinfo=timezone.utc)
-
-    epoch_time = (dt - EPOCH_DT).total_seconds()
-    return epoch_time
+        return (dt - EPOCH_DT).total_seconds()
+    return None
 
 
 def _decode_linux_time(mtime):

@@ -3,6 +3,8 @@ from __future__ import unicode_literals
 import textwrap
 import time
 import unittest
+import warnings
+from datetime import datetime, timezone
 
 from fs import _ftp_parse as ftp_parse
 
@@ -15,6 +17,35 @@ time2017 = time.struct_time([2017, 11, 28, 1, 1, 1, 1, 332, 0])
 
 
 class TestFTPParse(unittest.TestCase):
+    @mock.patch("time.localtime")
+    def test_yearless_leap_day(self, mock_localtime):
+        mock_localtime.return_value = time.struct_time([2024, 3, 1, 0, 0, 0, 4, 61, 0])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            self.assertEqual(
+                ftp_parse._decode_linux_time("Feb 29 12:34"),
+                datetime(2024, 2, 29, 12, 34, tzinfo=timezone.utc).timestamp(),
+            )
+
+    @mock.patch("time.localtime")
+    def test_invalid_yearless_date_omits_modified(self, mock_localtime):
+        mock_localtime.return_value = time2017
+        for date in ("Feb 29 12:34", "Feb 30 12:34", "Apr 31 12:34"):
+            with self.subTest(date=date):
+                info = ftp_parse.parse_line(
+                    "-rw-r--r-- 1 user group 12 {} file.txt".format(date)
+                )
+                self.assertEqual(info["basic"]["name"], "file.txt")
+                self.assertNotIn("modified", info["details"])
+
+    def test_explicit_1900_is_preserved(self):
+        self.assertEqual(
+            ftp_parse._decode_linux_time("Jan 01 1900"),
+            (
+                datetime(1900, 1, 1, tzinfo=timezone.utc) - ftp_parse.EPOCH_DT
+            ).total_seconds(),
+        )
+
     @mock.patch("time.localtime")
     def test_parse_time(self, mock_localtime):
         self.assertEqual(
@@ -42,8 +73,7 @@ class TestFTPParse(unittest.TestCase):
     @mock.patch("time.localtime")
     def test_decode_linux(self, mock_localtime):
         mock_localtime.return_value = time2017
-        directory = textwrap.dedent(
-            """
+        directory = textwrap.dedent("""
             lrwxrwxrwx    1 0        0              19 Jan 18  2006 debian -> ./pub/mirror/debian
             drwxr-xr-x   10 0        0            4096 Aug 03 09:21 debian-archive
             lrwxrwxrwx    1 0        0              27 Nov 30  2015 debian-backports -> pub/mirror/debian-backports
@@ -53,8 +83,7 @@ class TestFTPParse(unittest.TestCase):
             drwxr-xr-x   8 f      b          4096 Oct  4 09:05 test
             drwxr-xr-x   2 foo-user foo-group         0 Jan  5 11:59 240485
             drwxr-xr-x   2 foo.user$ foo@group_         0 Jan  5 11:59 240485
-            """
-        )
+            """)
 
         expected = [
             {
@@ -193,8 +222,7 @@ class TestFTPParse(unittest.TestCase):
     @mock.patch("time.localtime")
     def test_decode_windowsnt(self, mock_localtime):
         mock_localtime.return_value = time2017
-        directory = textwrap.dedent(
-            """
+        directory = textwrap.dedent("""
             unparsable line
             11-02-17  02:00AM       <DIR>          docs
             11-02-17  02:12PM       <DIR>          images
@@ -206,8 +234,7 @@ class TestFTPParse(unittest.TestCase):
             11-02-17    4:54AM                 0 icon.gif
             11-02-17    4:54PM                 0 icon.png
             11-02-17    16:54                 0 icon.jpg
-            """
-        )
+            """)
         expected = [
             {
                 "basic": {"is_dir": True, "name": "docs"},
@@ -268,12 +295,10 @@ class TestFTPParse(unittest.TestCase):
     def test_decode_linux_suid(self, mock_localtime):
         # reported in #451
         mock_localtime.return_value = time2017
-        directory = textwrap.dedent(
-            """
+        directory = textwrap.dedent("""
             drwxr-sr-x   66 ftp      ftp          8192 Mar 16 17:54 pub
             -rw-r--r--    1 ftp      ftp            25 Mar 18 19:34 robots.txt
-            """
-        )
+            """)
         expected = [
             {
                 "access": {
@@ -321,11 +346,9 @@ class TestFTPParse(unittest.TestCase):
     def test_decode_linux_sticky(self, mock_localtime):
         # reported in #451
         mock_localtime.return_value = time2017
-        directory = textwrap.dedent(
-            """
+        directory = textwrap.dedent("""
             drwxr-xr-t   66 ftp      ftp          8192 Mar 16 17:54 pub
-            """
-        )
+            """)
         expected = [
             {
                 "access": {
