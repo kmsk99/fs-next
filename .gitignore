@@ -98,3 +98,7 @@ ENV/
 
 .vscode
 
+
+# FS Next local development
+.venv*/
+.pytest_cache/

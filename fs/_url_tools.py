@@ -2,7 +2,7 @@ import typing
 
 import platform
 import re
-import six
+from urllib.parse import quote
 
 if typing.TYPE_CHECKING:
     from typing import Text
@@ -15,24 +15,21 @@ def url_quote(path_snippet):
     """Quote a URL without quoting the Windows drive letter, if any.
 
     On Windows, it will separate drive letter and quote Windows
-    path alone. No magic on Unix-like path, just pythonic
-    `~urllib.request.pathname2url`.
+    path alone. Unix paths are quoted as URL path components without adding an authority.
 
     Arguments:
        path_snippet (str): a file path, relative or absolute.
 
     """
-    if _WINDOWS_PLATFORM and _has_drive_letter(path_snippet):
-        drive_letter, path = path_snippet.split(":", 1)
-        if six.PY2:
-            path = path.encode("utf-8")
-        path = six.moves.urllib.request.pathname2url(path)
-        path_snippet = "{}:{}".format(drive_letter, path)
-    else:
-        if six.PY2:
-            path_snippet = path_snippet.encode("utf-8")
-        path_snippet = six.moves.urllib.request.pathname2url(path_snippet)
-    return path_snippet
+    # FS URLs already supply their scheme. pathname2url() started adding
+    # an authority prefix for absolute paths in Python 3.14, which would
+    # turn osfs:///tmp into osfs://///tmp. Quote the path component only.
+    if _WINDOWS_PLATFORM:
+        path_snippet = path_snippet.replace("\\", "/")
+        if _has_drive_letter(path_snippet):
+            drive, path = path_snippet.split(":", 1)
+            return drive + ":" + quote(path, safe="/")
+    return quote(path_snippet, safe="/")
 
 
 def _has_drive_letter(path_snippet):

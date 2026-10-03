@@ -8,7 +8,7 @@ import typing
 
 import collections
 import contextlib
-import pkg_resources
+from importlib.metadata import entry_points
 
 from ..errors import ResourceReadOnly
 from .base import Opener
@@ -76,7 +76,7 @@ class Registry(object):
         if self.load_extern:
             _protocols.extend(
                 entry_point.name
-                for entry_point in pkg_resources.iter_entry_points("fs.opener")
+                for entry_point in entry_points(group="fs.opener")
             )
             _protocols = list(collections.OrderedDict.fromkeys(_protocols))
         return _protocols
@@ -103,7 +103,7 @@ class Registry(object):
 
         if self.load_extern:
             entry_point = next(
-                pkg_resources.iter_entry_points("fs.opener", protocol), None
+                iter(entry_points(group="fs.opener", name=protocol)), None
             )
         else:
             entry_point = None
@@ -126,7 +126,7 @@ class Registry(object):
                 raise EntryPointError(
                     "could not load entry point; {}".format(exception)
                 )
-            if not issubclass(opener, Opener):
+            if not isinstance(opener, type) or not issubclass(opener, Opener):
                 raise EntryPointError("entry point did not return an opener")
 
             try:

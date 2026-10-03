@@ -1,3 +1,2 @@
-"""Version, used in module and setup.py.
-"""
-__version__ = "2.4.16"
+"""FS Next development version."""
+__version__ = "0.1.0a1"
