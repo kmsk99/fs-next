@@ -3,6 +3,27 @@ on: [push, pull_request, workflow_call, workflow_dispatch]
 permissions:
   contents: read
 jobs:
+  upstream-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install upstream and candidate separately
+        run: |
+          python -m venv .local/upstream
+          python -m venv .local/candidate
+          .local/upstream/bin/python -m pip install "setuptools<81" fs==2.4.16
+          .local/candidate/bin/python -m pip install .
+      - name: Compare API and behavior with PyPI fs 2.4.16
+        run: |
+          BASELINE=$(.local/upstream/bin/python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')
+          python scripts/check_upstream_api.py "$BASELINE/fs" fs
+          .local/upstream/bin/python -I scripts/check_feature_parity.py > .local/upstream.json
+          .local/candidate/bin/python -I scripts/check_feature_parity.py > .local/candidate.json
+          diff -u .local/upstream.json .local/candidate.json
   tests:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
