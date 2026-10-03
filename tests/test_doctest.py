@@ -1,6 +1,6 @@
 # coding: utf-8
-"""Test doctest contained tests in every file of the module.
-"""
+"""Test doctest contained tests in every file of the module."""
+
 import doctest
 import importlib
 import os
@@ -67,14 +67,14 @@ def _my_fs(module):
         my_fs.touch("file.txt")
     elif module == "fs.info":
         my_fs.touch("foo.tar.gz")
-        my_fs.settext("foo.py", "print('Hello, world!')")
+        my_fs.writetext("foo.py", "print('Hello, world!')")
         my_fs.makedir("bar")
     elif module in {"fs.walk", "fs.glob"}:
         my_fs.makedir("dir1")
         my_fs.makedir("dir2")
-        my_fs.settext("foo.py", "print('Hello, world!')")
+        my_fs.writetext("foo.py", "print('Hello, world!')")
         my_fs.touch("foo.pyc")
-        my_fs.settext("bar.py", "print('ok')\n\n# this is a comment\n")
+        my_fs.writetext("bar.py", "print('ok')\n\n# this is a comment\n")
         my_fs.touch("bar.pyc")
     return my_fs
 
@@ -126,7 +126,7 @@ def _load_tests(loader, tests, ignore):
     # recursively traverse all library submodules and load tests from them
     packages = [None, fs]
     for pkg in iter(packages.pop, None):
-        for (_, subpkgname, subispkg) in pkgutil.walk_packages(pkg.__path__):
+        for _, subpkgname, subispkg in pkgutil.walk_packages(pkg.__path__):
             # import the submodule and add it to the tests
             module = importlib.import_module(".".join([pkg.__name__, subpkgname]))
 
@@ -181,13 +181,44 @@ class TestDoctest(unittest.TestCase):
 
 def make_wrapper(x):
     def _test_wrapper(self):
-        x.setUp()
-        try:
-            x.runTest()
-        finally:
-            x.tearDown()
+        # DocTestCase.run initializes state used by runTest on Python 3.15.
+        # Use the public unittest lifecycle, including setup and teardown.
+        result = unittest.TestResult()
+        x.run(result)
+        if result.errors or result.failures:
+            self.fail(
+                "\n".join(detail for _, detail in result.errors + result.failures)
+            )
+        if result.skipped:
+            self.skipTest(result.skipped[0][1])
 
     return _test_wrapper
+
+
+class TestDoctestWrapper(unittest.TestCase):
+    def test_failure_is_reported_and_teardown_runs(self):
+        events = []
+        example = doctest.DocTestParser().get_doctest(
+            ">>> 1 + 1\n3\n", {}, "intentional_failure", __file__, 0
+        )
+        case = doctest.DocTestCase(
+            example,
+            setUp=lambda _: events.append("setup"),
+            tearDown=lambda _: events.append("teardown"),
+        )
+        with self.assertRaisesRegex(AssertionError, "intentional_failure"):
+            make_wrapper(case)(self)
+        self.assertEqual(events, ["setup", "teardown"])
+
+    def test_setup_error_is_reported(self):
+        def fail_setup(_):
+            raise RuntimeError("fixture failure")
+
+        example = doctest.DocTestParser().get_doctest(
+            ">>> 1 + 1\n2\n", {}, "setup_error", __file__, 0
+        )
+        with self.assertRaisesRegex(AssertionError, "fixture failure"):
+            make_wrapper(doctest.DocTestCase(example, setUp=fail_setup))(self)
 
 
 for x in _load_tests(None, unittest.TestSuite(), False):
