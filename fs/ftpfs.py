@@ -190,8 +190,15 @@ class FTPFile(io.RawIOBase):
             with self._lock:
                 try:
                     if self._write_conn is not None:
-                        self._write_conn.close()
+                        connection = self._write_conn
                         self._write_conn = None
+                        try:
+                            # Match FTP_TLS.storbinary: complete TLS shutdown
+                            # before waiting for the transfer's 226 response.
+                            if self.fs.tls:
+                                connection.unwrap()
+                        finally:
+                            connection.close()
                         self.ftp.voidresp()  # Ensure last write completed
                     if self._read_conn is not None:
                         self._read_conn.close()
@@ -201,7 +208,10 @@ class FTPFile(io.RawIOBase):
                     except error_temp:  # pragma: no cover
                         pass
                 finally:
-                    super(FTPFile, self).close()
+                    try:
+                        self.ftp.close()
+                    finally:
+                        super(FTPFile, self).close()
 
     def tell(self):
         # type: () -> int

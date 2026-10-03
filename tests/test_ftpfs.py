@@ -27,7 +27,7 @@ from pyftpdlib.servers import FTPServer
 from six import BytesIO, text_type
 
 from fs import errors
-from fs.ftpfs import FTPFS, ftp_errors
+from fs.ftpfs import FTPFS, FTPFile, ftp_errors
 from fs.opener import open_fs
 from fs.path import join
 from fs.subfs import SubFS
@@ -42,8 +42,8 @@ except ImportError:
 class LocalFTPServer:
     """Loopback fixture using pyftpdlib's public server API."""
 
-    def __init__(self):
-        self.handler = type("TestFTPHandler", (FTPHandler,), {})
+    def __init__(self, handler_class=FTPHandler):
+        self.handler = type("TestFTPHandler", (handler_class,), {})
         self._loop = IOLoop()
         self._server = FTPServer(("127.0.0.1", 0), self.handler, ioloop=self._loop)
         self.host, self.port = self._server.socket.getsockname()
@@ -70,6 +70,47 @@ class LocalFTPServer:
         self._thread.join(timeout=5)
         if self._thread.is_alive():
             raise RuntimeError("FTP server did not stop")
+
+
+class TestFTPFileClose(unittest.TestCase):
+    def test_tls_shutdown_precedes_completion_response(self):
+        storage = FTPFS("unused.invalid", tls=True)
+        client = mock.Mock()
+        with mock.patch.object(storage, "_open_ftp", return_value=client):
+            stream = FTPFile(storage, "file", "w")
+        calls = mock.Mock()
+        stream._write_conn = calls.connection
+        calls.attach_mock(client, "client")
+        calls.reset_mock()
+        stream.close()
+        self.assertEqual(
+            calls.mock_calls,
+            [
+                mock.call.connection.unwrap(),
+                mock.call.connection.close(),
+                mock.call.client.voidresp(),
+                mock.call.client.quit(),
+                mock.call.client.close(),
+            ],
+        )
+        self.assertTrue(stream.closed)
+        storage.close()
+
+    def test_tls_shutdown_failure_closes_both_sockets(self):
+        storage = FTPFS("unused.invalid", tls=True)
+        client = mock.Mock()
+        with mock.patch.object(storage, "_open_ftp", return_value=client):
+            stream = FTPFile(storage, "file", "w")
+        connection = mock.Mock()
+        connection.unwrap.side_effect = OSError("TLS shutdown failed")
+        stream._write_conn = connection
+        with self.assertRaisesRegex(OSError, "TLS shutdown failed"):
+            stream.close()
+        connection.close.assert_called_once_with()
+        client.close.assert_called_once_with()
+        self.assertTrue(stream.closed)
+        stream.close()
+        storage.close()
 
 
 class TestFTPFSClass(unittest.TestCase):

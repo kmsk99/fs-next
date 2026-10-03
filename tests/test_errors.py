@@ -20,7 +20,7 @@ class TestErrors(unittest.TestCase):
         self.assertEqual(text_type(err), "not supported")
 
     def test_raise_in_multiprocessing(self):
-        # Without the __reduce__ methods in FSError subclasses, this test will hang forever.
+        # Bound the wait so broken exception pickling fails instead of hanging CI.
         tests = [
             [errors.ResourceNotFound, "some_path"],
             [errors.FilesystemClosed],
@@ -31,15 +31,12 @@ class TestErrors(unittest.TestCase):
             [errors.IllegalBackReference, "path"],
             [errors.MissingInfoNamespace, "path"],
         ]
-        try:
-            pool = multiprocessing.Pool(1)
+        with multiprocessing.Pool(1) as pool:
             for args in tests:
                 exc = args[0](*args[1:])
                 exc.__reduce__()
                 with self.assertRaises(args[0]):
-                    pool.apply(_multiprocessing_test_task, args)
-        finally:
-            pool.close()
+                    pool.apply_async(_multiprocessing_test_task, args).get(timeout=30)
 
 
 def _multiprocessing_test_task(err, *args):
