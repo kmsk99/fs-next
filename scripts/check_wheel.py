@@ -1,7 +1,7 @@
 """Run with python -I after installing the wheel in a fresh environment."""
 
 import importlib.util
-from importlib.metadata import version
+from importlib.metadata import metadata, version
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -14,6 +14,7 @@ assert "site-packages" in fs.__file__, fs.__file__
 assert importlib.util.find_spec("pkg_resources") is None
 assert importlib.util.find_spec("setuptools") is None
 assert version("fs-next") == fs.__version__
+assert "scandir" in metadata("fs-next").get_all("Provides-Extra", [])
 with TemporaryDirectory() as directory:
     with open_fs("mem://") as memory, open_fs(directory) as disk:
         memory.writetext("hello 한글.txt", "FS Next")

@@ -10,8 +10,10 @@ concurrency:
 jobs:
   tests:
     uses: ./.github/workflows/test.yml
+  preview:
+    uses: ./.github/workflows/python-preview.yml
   build:
-    needs: tests
+    needs: [tests, preview]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
