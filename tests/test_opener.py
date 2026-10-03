@@ -10,6 +10,7 @@ import unittest
 
 from fs import open_fs, opener
 from fs.appfs import UserDataFS
+from fs.errors import CreateFailed
 from fs.memoryfs import MemoryFS
 from fs.opener import errors, registry
 from fs.opener.parse import ParseResult
@@ -315,6 +316,14 @@ class TestOpeners(unittest.TestCase):
             timeout=10,
             tls=False,
         )
+
+    @mock.patch("fs.ftpfs.FTPFS")
+    def test_open_ftp_directory_failure_closes_connection(self, mock_FTPFS):
+        storage = mock_FTPFS.return_value
+        storage.opendir.side_effect = RuntimeError("cannot open directory")
+        with self.assertRaises(CreateFailed):
+            open_fs("ftp://example.org/missing")
+        storage.close.assert_called_once_with()
 
     @mock.patch("fs.ftpfs.FTPFS")
     def test_open_ftps(self, mock_FTPFS):

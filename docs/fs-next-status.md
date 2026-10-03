@@ -15,6 +15,9 @@
 - Retain `fs.opener` discovery, including errors for invalid opener objects.
 - Fix absolute FS URLs affected by Python 3.14's `pathname2url` change.
 - Update removed unittest assertion aliases in upstream test helpers.
+- Avoid network waits during FTP garbage collection, close failed opener
+  connections, and prevent closing an unused filesystem from opening a connection.
+  Python 3.12 CI exposed a reproducible server-thread stall during finalization.
 - Modernize FTP integration tests to pyftpdlib 2's public server API, bound only
   to loopback. Join the server thread before teardown.
 - Close stream wrappers before their underlying files in inherited I/O tests,

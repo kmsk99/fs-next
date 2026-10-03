@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import calendar
 import datetime
+import gc
 import os
 import platform
 import shutil
@@ -11,6 +12,7 @@ import tempfile
 import threading
 import unittest
 import uuid
+import weakref
 
 try:
     from unittest import mock
@@ -71,6 +73,37 @@ class LocalFTPServer:
 
 
 class TestFTPFSClass(unittest.TestCase):
+    def test_close_unused_does_not_connect(self):
+        storage = FTPFS("unused.invalid")
+        with mock.patch.object(storage, "_open_ftp") as connect:
+            storage.close()
+            storage.close()
+        connect.assert_not_called()
+        self.assertTrue(storage.isclosed())
+
+    def test_close_after_quit_failure_closes_socket(self):
+        storage = FTPFS("unused.invalid")
+        client = mock.Mock()
+        client.quit.side_effect = OSError("connection lost")
+        storage._ftp = client
+        storage.close()
+        storage.close()
+        client.quit.assert_called_once_with()
+        client.close.assert_called_once_with()
+        self.assertTrue(storage.isclosed())
+
+    def test_garbage_collection_does_not_wait_for_server(self):
+        storage = FTPFS("unused.invalid")
+        client = mock.Mock()
+        storage._ftp = client
+        storage.cycle = storage
+        reference = weakref.ref(storage)
+        del storage
+        gc.collect()
+        self.assertIsNone(reference())
+        client.quit.assert_not_called()
+        client.close.assert_called_once_with()
+
     def test_parse_ftp_time(self):
         self.assertIsNone(FTPFS._parse_ftp_time("notreallyatime"))
         t = FTPFS._parse_ftp_time("19740705000000")

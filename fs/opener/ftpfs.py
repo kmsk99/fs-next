@@ -49,9 +49,12 @@ class FTPOpener(Opener):
             timeout=int(parse_result.params.get("timeout", "10")),
             tls=bool(parse_result.protocol == "ftps"),
         )
-        if dir_path:
-            if create:
-                ftp_fs.makedirs(dir_path, recreate=True)
-            return ftp_fs.opendir(dir_path, factory=ClosingSubFS)
-        else:
+        try:
+            if dir_path:
+                if create:
+                    ftp_fs.makedirs(dir_path, recreate=True)
+                return ftp_fs.opendir(dir_path, factory=ClosingSubFS)
             return ftp_fs
+        except BaseException:
+            ftp_fs.close()
+            raise

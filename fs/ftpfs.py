@@ -897,12 +897,26 @@ class FTPFS(FS):
         data_bytes = data.getvalue()
         return data_bytes
 
+    def __del__(self):
+        # Garbage collection can run in any thread, including one serving the
+        # remote endpoint in an embedded application. Never wait for QUIT here.
+        ftp = getattr(self, "_ftp", None)
+        if ftp is not None:
+            ftp.close()
+            self._ftp = None
+
     def close(self):
         # type: () -> None
         if not self.isclosed():
-            try:
-                self.ftp.quit()
-            except Exception:  # pragma: no cover
-                pass
+            ftp = getattr(self, "_ftp", None)
             self._ftp = None
-        super(FTPFS, self).close()
+            try:
+                if ftp is not None:
+                    try:
+                        ftp.quit()
+                    except Exception:
+                        pass
+                    finally:
+                        ftp.close()
+            finally:
+                super(FTPFS, self).close()
