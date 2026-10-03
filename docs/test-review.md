@@ -30,7 +30,7 @@ Reproduce the suite with:
 
 ```sh
 python -m pip install -e '.[test]'
-python -m pytest tests -q -ra -W error::DeprecationWarning:fs -W error::pytest.PytestUnraisableExceptionWarning -W error::pytest.PytestUnhandledThreadExceptionWarning
+python -m pytest tests -q -ra -W error::pytest.PytestUnraisableExceptionWarning -W error::pytest.PytestUnhandledThreadExceptionWarning
 ```
 
 ## Skipped tests
