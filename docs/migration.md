@@ -8,20 +8,20 @@ overlapping files and must not coexist.
 ## Application without external plugins
 
 Change the application's dependency from `fs` to `fs-next`, regenerate its lock
-file, then install into a fresh environment. For the current published alpha:
+file, then install into a fresh environment. For the first stable release:
 
 ```sh
 python -m venv .venv-fsnext
 # POSIX; on Windows use .venv-fsnext\Scripts\activate
 . .venv-fsnext/bin/activate
-python -m pip install fs-next==0.1.0a1
+python -m pip install fs-next==0.1.0
 python -m pip check
 python -c 'from fs import open_fs; f = open_fs("mem://"); f.writetext("hello.txt", "hello"); assert f.readtext("hello.txt") == "hello"; f.close()'
 ```
 
 Run your application's own filesystem and error-handling tests. See
 [support policy](support-policy.md) for Python versions and
-[alpha validation](fs-next-status.md) for the published release's scope.
+[release audit](release-0.1.0.md) for the published release's scope.
 
 If both distributions were installed accidentally, rebuild the environment.
 Uninstalling just one can remove files belonging to the other.

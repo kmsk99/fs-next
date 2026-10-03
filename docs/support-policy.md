@@ -31,10 +31,13 @@ release scheduled for October 9 in [PEP 790](https://peps.python.org/pep-0790/).
 
 ## Evidence
 
-The published 0.1.0a1 release passed 9 CI jobs (3.10, 3.12, 3.14 × three OSes).
-The expanded workflow configuration does not retroactively establish 15 passing
-release jobs. Local follow-up results and remaining gaps are recorded in
-[test review](test-review.md); consult GitHub Actions for remote run results.
+The 0.1.0 release audit compares with the published `fs==2.4.16` package and
+runs the expanded matrix, plugin probes and installed-wheel checks. See the
+[release audit](release-0.1.0.md) and GitHub Actions for release-specific results.
+
+Patch releases in the 0.1.x series aim to preserve documented API compatibility.
+Any intentional incompatible change will be documented in a new minor version.
+Third-party package dependencies still need their own migration from `fs`.
 
 Raising the minimum version requires a separately documented project decision.
 An upstream Python EOL does not automatically remove FS Next compatibility.

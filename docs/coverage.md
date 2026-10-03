@@ -1,5 +1,15 @@
 # Coverage snapshot
 
+## Stable 0.1.0 audit
+
+Measured 2026-10-04 on macOS CPython 3.14.7 with coverage.py 7.16.2 after adding
+the FTPS suite and TLS shutdown fix: **4,978 / 5,364 statements (92.80%)**,
+**1,238 / 1,438 branches (86.09%)**, **91.38% combined**. The suite passed
+2,756 tests with 30 skips and 10 third-party warnings. Scope and exclusions
+remain unchanged. See [release audit](release-0.1.0.md).
+
+## Earlier development snapshot
+
 Follow-up development measurement (2026-10-04, macOS CPython 3.14.7,
 coverage.py 7.16.2): **4,972 / 5,358 statements (92.80%)** and
 **1,235 / 1,436 branches (86.00%)**, combined **91.36%**. The suite passed

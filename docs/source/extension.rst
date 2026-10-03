@@ -67,11 +67,10 @@ Refer to the `setuptools documentation <https://setuptools.readthedocs.io/>`_
 to see how to write a ``setup.py`` file. There are only a few things that
 should be kept in mind when creating a Pyfilesystem2 extension. Make sure that:
 
-* ``fs`` is in the ``install_requires`` list. You should reference the
-  version number with the ``~=`` operator which ensures that the install
-  will get any bugfix releases of PyFilesystem but not any potentially
-  breaking changes.
-* Ìf you created an opener, include it as an ``fs.opener`` entry point,
+* ``fs-next`` is in the ``install_requires`` list for an FS Next plugin.
+  Keep imports as ``fs`` and do not depend on both distributions. Choose a
+  version range that your plugin has tested.
+* If you created an opener, include it as an ``fs.opener`` entry point,
   using the name of the entry point as the protocol to be used.
 
 Here is an minimal ``setup.py`` for our project:
@@ -85,7 +84,7 @@ Here is an minimal ``setup.py`` for our project:
        author_email="your.email@domain.ext",
        description="An awesome filesystem for pyfilesystem2 !",
        install_requires=[
-           "fs~=2.0.5"
+           "fs-next>=0.1.0,<0.2"
        ],
        entry_points = {
            'fs.opener': [

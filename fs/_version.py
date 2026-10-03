@@ -1,2 +1,2 @@
-"""FS Next development version."""
-__version__ = "0.1.0a1"
+"""FS Next version."""
+__version__ = "0.1.0"

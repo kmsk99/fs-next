@@ -19,12 +19,12 @@ import sphinx_rtd_theme
 
 html_theme = "sphinx_rtd_theme"
 
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 # -- General configuration ------------------------------------------------
 
@@ -39,7 +39,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    "recommonmark",
+    "myst_parser",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -47,13 +47,13 @@ templates_path = ['_templates']
 
 # intersphinx domain mapping
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3.6', None)
+    'python': ('https://docs.python.org/3', None)
 }
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = {'.rst': 'restructuredtext', '.md': 'markdown'}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -62,9 +62,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PyFilesystem'
+project = 'FS Next'
 copyright = u'2016-2021, Will McGugan and the PyFilesystem2 contributors'
-author = u'Will McGugan'
+author = 'The PyFilesystem2 contributors and FS Next maintainers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -156,7 +156,7 @@ todo_include_todos = False
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = []
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -221,7 +221,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'PyFilesystem2doc'
+htmlhelp_basename = 'FSNextdoc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -243,7 +243,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'PyFilesystem2.tex', u'PyFilesystem Documentation',
+    (master_doc, 'FSNext.tex', u'FS Next Documentation',
      u'Will McGugan', 'manual'),
 ]
 
@@ -273,7 +273,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'pyfilesystem', u'PyFilesystem Documentation',
+    (master_doc, 'fs-next', u'FS Next Documentation',
      [author], 1)
 ]
 
@@ -287,8 +287,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'PyFilesystem', u'PyFilesystem Documentation',
-     author, 'PyFilesystem', 'Filesystem interface.',
+    (master_doc, 'FSNext', u'FS Next Documentation',
+     author, 'FS Next', 'Filesystem interface.',
      'Miscellaneous'),
 ]
 
@@ -313,6 +313,7 @@ napoleon_include_special_with_doc = True
 # __init__ methods, since the arguments to instantiate classes should be in
 # the __init__ docstring and not at the class-level.
 
-autodoc_default_options = {
-    'special-members': '__init__',
-}
+autoclass_content = 'both'
+# Legacy bound-method aliases carry type comments that Sphinx cannot map to
+# their bound signatures. Parameter types remain documented in docstrings.
+autodoc_use_type_comments = False

@@ -7,7 +7,9 @@
    Mark alpha/beta/RC versions as prereleases. Use reviewed release notes.
 3. `publish.yml` tests the tagged source on Linux/macOS/Windows, builds the wheel
    and sdist, validates metadata and checks a fresh installed wheel without
-   setuptools. Only then can the `publish` job upload to PyPI.
+   setuptools, runs the full suite against installed-wheel imports and builds
+   the documentation with warnings treated as errors. The test gate also
+   compares API/behavior with PyPI fs 2.4.16. Only then can `publish` upload to PyPI.
 4. Verify the version on PyPI, install it into a new virtual environment and run
    `python -I scripts/check_wheel.py` against the published package.
 

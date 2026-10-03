@@ -3,8 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PyFilesystem2's documentation!
-=========================================
+FS Next documentation
+=====================
+
+FS Next preserves PyFilesystem2's filesystem API for Python 3.10 and later.
+This documentation is adapted from the original project's work, with its
+authors' credit and MIT license preserved. FS Next is an independent fork.
+
+See the `release audit <https://github.com/kmsk99/fs-next/blob/main/docs/release-0.1.0.md>`_
+for verified functionality and external-backend limits.
 
 Contents:
 

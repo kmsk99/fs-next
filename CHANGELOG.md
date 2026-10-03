@@ -6,9 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## FS Next — Unreleased
+## FS Next 0.1.0 — 2026-10-04
 
 ### Added
+
+- Comparison with the published fs 2.4.16 API and installed-package behavior.
+- A full loopback FTPS contract suite requiring encrypted control/data channels.
+- Updated installation and extension documentation with a warning-free Sphinx build.
 
 - Required Python 3.11/3.13 CI coverage and a separate Python 3.15 preview
   workflow, retaining the minimum Python version of 3.10.
@@ -16,6 +20,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   resolution, plus Python support and regression review documentation.
 
 ### Fixed
+
+- Complete TLS shutdown for streamed FTPS writes before waiting for transfer
+  completion, fixing timeouts during worker-thread uploads; close both sockets
+  when TLS shutdown fails.
 
 - Parse yearless FTP LIST dates with an explicit current year; handle invalid
   dates without breaking listings and preserve explicit year 1900.

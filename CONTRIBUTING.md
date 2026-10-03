@@ -12,4 +12,4 @@ Build artifacts with `python -m build`, check them with `python -m twine check
 dist/*`, and test the installed wheel in a fresh environment outside the source
 checkout. Do not use editable-install results as evidence that the wheel works.
 
-See [release instructions](docs/releasing.md) for the tag and PyPI workflow.
+See [release instructions](https://github.com/kmsk99/fs-next/blob/main/docs/releasing.md) for the tag and PyPI workflow.

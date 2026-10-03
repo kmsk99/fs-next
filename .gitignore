@@ -102,3 +102,6 @@ ENV/
 # FS Next local development
 .venv*/
 .pytest_cache/
+
+# Local conversation context (never publish)
+/.local/
