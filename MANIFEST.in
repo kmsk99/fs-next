@@ -2,6 +2,7 @@ include CHANGELOG.md
 include CONTRIBUTING.md
 include CONTRIBUTORS.md
 include LICENSE
+graft scripts
 graft tests
 graft docs
 global-exclude __pycache__

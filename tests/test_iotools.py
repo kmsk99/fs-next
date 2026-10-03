@@ -90,11 +90,11 @@ class TestIOTools(unittest.TestCase):
     def test_readlines(self):
         self.fs.writebytes("foo", b"barbar\nline1\nline2")
         with self.fs.open("foo", "rb") as f:
-            f = iotools.make_stream("foo", f, "rb")
-            self.assertEqual(list(f), [b"barbar\n", b"line1\n", b"line2"])
+            with iotools.make_stream("foo", f, "rb") as stream:
+                self.assertEqual(list(stream), [b"barbar\n", b"line1\n", b"line2"])
         with self.fs.open("foo", "rt") as f:
-            f = iotools.make_stream("foo", f, "rb")
-            self.assertEqual(f.readlines(), ["barbar\n", "line1\n", "line2"])
+            with iotools.make_stream("foo", f, "rb") as stream:
+                self.assertEqual(stream.readlines(), ["barbar\n", "line1\n", "line2"])
 
     def test_readall(self):
         self.fs.writebytes("foo", b"foobar")
@@ -103,8 +103,8 @@ class TestIOTools(unittest.TestCase):
 
     def test_writelines(self):
         with self.fs.open("foo", "wb") as f:
-            f = iotools.make_stream("foo", f, "rb")
-            f.writelines([b"foo", b"bar", b"baz"])
+            with iotools.make_stream("foo", f, "wb") as stream:
+                stream.writelines([b"foo", b"bar", b"baz"])
         self.assertEqual(self.fs.readbytes("foo"), b"foobarbaz")
 
     def test_seekable(self):

@@ -8,7 +8,7 @@ import platform
 import shutil
 import socket
 import tempfile
-import time
+import threading
 import unittest
 import uuid
 
@@ -19,6 +19,9 @@ except ImportError:
 
 from ftplib import error_perm, error_temp
 from pyftpdlib.authorizers import DummyAuthorizer
+from pyftpdlib.handlers import FTPHandler
+from pyftpdlib.ioloop import IOLoop
+from pyftpdlib.servers import FTPServer
 from six import BytesIO, text_type
 
 from fs import errors
@@ -33,8 +36,38 @@ try:
 except ImportError:
     from . import mark
 
-# Prevent socket timeouts from slowing tests too much
-socket.setdefaulttimeout(1)
+
+class LocalFTPServer:
+    """Loopback fixture using pyftpdlib's public server API."""
+
+    def __init__(self):
+        self.handler = type("TestFTPHandler", (FTPHandler,), {})
+        self._loop = IOLoop()
+        self._server = FTPServer(("127.0.0.1", 0), self.handler, ioloop=self._loop)
+        self.host, self.port = self._server.socket.getsockname()
+        self._stop = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True)
+
+    def _run(self):
+        try:
+            while not self._stop.is_set():
+                self._server.serve_forever(
+                    timeout=0.01, blocking=False, handle_exit=False
+                )
+        finally:
+            self._server.close_all()
+
+    def start(self):
+        self._thread.start()
+
+    def is_alive(self):
+        return self._thread.is_alive()
+
+    def stop(self):
+        self._stop.set()
+        self._thread.join(timeout=5)
+        if self._thread.is_alive():
+            raise RuntimeError("FTP server did not stop")
 
 
 class TestFTPFSClass(unittest.TestCase):
@@ -146,16 +179,13 @@ class TestFTPFS(FSTestCases, unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from pyftpdlib.test import ThreadedTestFTPd
-
         super(TestFTPFS, cls).setUpClass()
 
         cls._temp_dir = tempfile.mkdtemp("ftpfs2tests")
         cls._temp_path = os.path.join(cls._temp_dir, text_type(uuid.uuid4()))
         os.mkdir(cls._temp_path)
 
-        cls.server = ThreadedTestFTPd()
-        cls.server.shutdown_after = -1
+        cls.server = LocalFTPServer()
         cls.server.handler.authorizer = DummyAuthorizer()
         cls.server.handler.authorizer.add_user(
             cls.user, cls.pasw, cls._temp_path, perm="elradfmwT"
@@ -163,10 +193,6 @@ class TestFTPFS(FSTestCases, unittest.TestCase):
         cls.server.handler.authorizer.add_anonymous(cls._temp_path)
         cls.server.start()
 
-        # Don't know why this is necessary on Windows
-        if platform.system() == "Windows":
-            time.sleep(0.1)
-        # Poll until a connection can be made
         if not cls.server.is_alive():
             raise RuntimeError("could not start FTP server.")
 
@@ -336,24 +362,17 @@ class TestAnonFTPFS(FSTestCases, unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from pyftpdlib.test import ThreadedTestFTPd
-
         super(TestAnonFTPFS, cls).setUpClass()
 
         cls._temp_dir = tempfile.mkdtemp("ftpfs2tests")
         cls._temp_path = os.path.join(cls._temp_dir, text_type(uuid.uuid4()))
         os.mkdir(cls._temp_path)
 
-        cls.server = ThreadedTestFTPd()
-        cls.server.shutdown_after = -1
+        cls.server = LocalFTPServer()
         cls.server.handler.authorizer = DummyAuthorizer()
         cls.server.handler.authorizer.add_anonymous(cls._temp_path, perm="elradfmw")
         cls.server.start()
 
-        # Don't know why this is necessary on Windows
-        if platform.system() == "Windows":
-            time.sleep(0.1)
-        # Poll until a connection can be made
         if not cls.server.is_alive():
             raise RuntimeError("could not start FTP server.")
 
