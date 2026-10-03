@@ -16,6 +16,7 @@ from pyftpdlib.authorizers import DummyAuthorizer
 from pyftpdlib.handlers import TLS_FTPHandler
 
 from fs import open_fs
+from fs.errors import UnsupportedHash
 from fs.test import FSTestCases
 
 from .test_ftpfs import LocalFTPServer
@@ -96,3 +97,13 @@ class TestFTPS(FSTestCases, unittest.TestCase):
             self.assertEqual(reopened.readtext("한글.txt"), "encrypted round trip")
             reopened.remove("한글.txt")
         self.assertEqual(self.fs.listdir("/"), [])
+
+    def test_invalid_hash_preserves_tls_connection(self):
+        self.fs.writebytes("hash.txt", b"abc")
+        connection = self.fs.ftp
+        for algorithm in ("nohash", "not-a-digest", ""):
+            with self.assertRaises(UnsupportedHash):
+                self.fs.hash("hash.txt", algorithm)
+            self.assertEqual(self.fs.readbytes("hash.txt"), b"abc")
+            self.assertEqual(connection.voidcmd("NOOP")[:3], "200")
+            self.assertIs(self.fs.ftp, connection)

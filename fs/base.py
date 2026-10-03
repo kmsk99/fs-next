@@ -15,10 +15,12 @@ import hashlib
 import itertools
 import os
 import six
+import sys
 import threading
 import time
 import warnings
 from contextlib import closing
+from concurrent.futures import ThreadPoolExecutor as _ThreadPoolExecutor
 from functools import partial, wraps
 
 from . import copy, errors, fsencode, glob, iotools, tools, walk, wildcard
@@ -84,9 +86,7 @@ def _new_name(method, old_name):
         Note:
             .. deprecated:: 2.2.0
                 Please use `~{}`
-""".format(
-        method.__name__
-    )
+""".format(method.__name__)
     if getattr(_method, "__doc__", None) is not None:
         _method.__doc__ += deprecated_msg
 
@@ -1821,7 +1821,16 @@ class FS(object):
         """
         self.validatepath(path)
         try:
-            hash_object = hashlib.new(name)
+            if sys.version_info >= (3, 15):
+                # CPython 3.15 can leave OpenSSL's per-thread error queue dirty
+                # when an algorithm lookup fails. That breaks unrelated TLS
+                # reads on this thread. Construct in a short-lived thread, so
+                # its error queue is discarded, while retaining hashlib's full
+                # algorithm/alias lookup and original exception semantics.
+                with _ThreadPoolExecutor(max_workers=1) as executor:
+                    hash_object = executor.submit(hashlib.new, name).result()
+            else:
+                hash_object = hashlib.new(name)
         except ValueError:
             raise errors.UnsupportedHash("hash '{}' is not supported".format(name))
         with self.openbin(path) as binary_file:

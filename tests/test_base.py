@@ -3,9 +3,11 @@
 from __future__ import unicode_literals
 
 import unittest
+import hashlib
 
 from fs import errors
 from fs.base import FS
+from fs.memoryfs import MemoryFS
 
 
 class DummyFS(FS):
@@ -34,6 +36,30 @@ class DummyFS(FS):
 class TestBase(unittest.TestCase):
     def setUp(self):
         self.fs = DummyFS()
+
+    def test_hash_algorithms_and_aliases(self):
+        with MemoryFS() as filesystem:
+            filesystem.writebytes("data", b"abc")
+            names = hashlib.algorithms_available | {"SHA256", "sha-256", "SHA2-256"}
+            for name in sorted(names):
+                with self.subTest(name=name):
+                    try:
+                        expected = hashlib.new(name, b"abc").hexdigest()
+                    except (ValueError, TypeError):
+                        # Availability depends on OpenSSL; XOF hashes require
+                        # a digest length that the original FS.hash API lacks.
+                        continue
+                    self.assertEqual(filesystem.hash("data", name), expected)
+
+    def test_hash_error_types(self):
+        with MemoryFS() as filesystem:
+            filesystem.writebytes("data", b"abc")
+            with self.assertRaises(errors.UnsupportedHash):
+                filesystem.hash("data", "nohash")
+            with self.assertRaises(TypeError):
+                filesystem.hash("data", None)
+            with self.assertRaises(errors.ResourceNotFound):
+                filesystem.hash("missing", "sha256")
 
     def test_validatepath(self):
         """Test validatepath method."""
