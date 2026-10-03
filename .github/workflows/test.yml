@@ -10,14 +10,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ['3.10', '3.12', '3.14']
+        python: ['3.10', '3.11', '3.12', '3.13', '3.14']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e ".[test]"
-      - run: python -m pytest tests -q -W error::pytest.PytestUnraisableExceptionWarning -W error::pytest.PytestUnhandledThreadExceptionWarning
+      - run: python -m pytest tests -q -W error::DeprecationWarning:fs -W error::pytest.PytestUnraisableExceptionWarning -W error::pytest.PytestUnhandledThreadExceptionWarning
   plugin:
     runs-on: ubuntu-latest
     strategy:
@@ -33,3 +33,25 @@ jobs:
       # the conflicting upstream distribution; this is not a supported resolver fix.
       - run: python -m pip install --no-deps pyfatfs==1.1.0
       - run: python scripts/check_pyfatfs.py
+  s3-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Prepare local plugin metadata migration
+        run: |
+          mkdir -p .local/plugin-source
+          python -m pip download --no-deps --no-binary=:all: fs-s3fs==1.1.1 -d .local/plugin-source
+          tar -xzf .local/plugin-source/fs-s3fs-1.1.1.tar.gz -C .local/plugin-source
+          python scripts/prepare_s3fs_probe.py .local/plugin-source/fs-s3fs-1.1.1
+      - name: Install with normal dependency resolution
+        run: python -m pip install . ./.local/plugin-source/fs-s3fs-1.1.1 "moto[s3]==5.2.3"
+      - run: python -m pip check
+      - run: python scripts/check_s3fs.py
