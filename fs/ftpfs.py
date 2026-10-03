@@ -184,22 +184,24 @@ class FTPFile(io.RawIOBase):
         _repr = "<ftpfile {!r} {!r} {!r}>"
         return _repr.format(self.fs.ftp_url, self.path, self.mode)
 
+    def _finish_write(self):
+        if self._write_conn is not None:
+            connection = self._write_conn
+            self._write_conn = None
+            try:
+                # Match FTP_TLS.storbinary: finish TLS before awaiting 226.
+                if self.fs.tls:
+                    connection.unwrap()
+            finally:
+                connection.close()
+            self.ftp.voidresp()
+
     def close(self):
         # type: () -> None
         if not self.closed:
             with self._lock:
                 try:
-                    if self._write_conn is not None:
-                        connection = self._write_conn
-                        self._write_conn = None
-                        try:
-                            # Match FTP_TLS.storbinary: complete TLS shutdown
-                            # before waiting for the transfer's 226 response.
-                            if self.fs.tls:
-                                connection.unwrap()
-                        finally:
-                            connection.close()
-                        self.ftp.voidresp()  # Ensure last write completed
+                    self._finish_write()
                     if self._read_conn is not None:
                         self._read_conn.close()
                         self._read_conn = None
@@ -334,6 +336,9 @@ class FTPFile(io.RawIOBase):
         if _whence not in (Seek.set, Seek.current, Seek.end):
             raise ValueError("invalid value for whence")
         with self._lock:
+            # Commit a pending upload before querying size or opening a new
+            # transfer. Closing its control connection first can lose writes.
+            self._finish_write()
             if _whence == Seek.set:
                 new_pos = pos
             elif _whence == Seek.current:
@@ -343,15 +348,17 @@ class FTPFile(io.RawIOBase):
                 new_pos = file_size + pos
             self.pos = max(0, new_pos)
 
-            self.ftp.quit()
-            self.ftp = self._open_ftp()
-
             if self._read_conn:
                 self._read_conn.close()
                 self._read_conn = None
-            if self._write_conn:
-                self._write_conn.close()
-                self._write_conn = None
+            try:
+                self.ftp.quit()
+            except error_temp:
+                # An interrupted download may report an aborted transfer.
+                pass
+            finally:
+                self.ftp.close()
+            self.ftp = self._open_ftp()
         return self.tell()
 
 

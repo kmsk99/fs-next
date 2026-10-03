@@ -31,8 +31,8 @@ See the [release audit](docs/release-0.1.0.md) for the comparison with the actua
 | Measure | Current status | What it means |
 | --- | --- | --- |
 | Upstream source retained | **57 / 57 Python modules** | All upstream `fs/**/*.py` paths remain; no original public definitions were removed |
-| Full suite | **2,756 passed · 30 skipped** | macOS / Python 3.14 snapshot; platform-specific counts can differ |
-| Test coverage | **92.80% statements · 86.09% branches** | Measured execution coverage; scope and reproduction below |
+| Full suite | **2,757 passed · 30 skipped** | macOS / Python 3.14 snapshot; platform-specific counts can differ |
+| Test coverage | **92.77% statements · 86.07% branches** | Measured execution coverage; scope and reproduction below |
 | Compatibility matrix | **15 required jobs** | Linux, macOS, Windows × Python 3.10–3.14; separate 3.15 preview |
 | External plugin probe | **2 plugins** | pyfatfs API probe; migrated S3 plugin with normal pip resolution and emulator integration |
 | Roadmap checklist | **13 / 15 done (87%)** | Current development checklist below, not effort or production readiness |
@@ -104,9 +104,9 @@ below were built by the upstream contributors and are inherited here.
 
 ## Test coverage
 
-**92.80% statement coverage (4,978 / 5,364) · 86.09% branch coverage (1,238 / 1,438).**
+**92.77% statement coverage (4,980 / 5,368) · 86.07% branch coverage (1,236 / 1,436).**
 
-**Combined coverage.py score: 91.38%.**
+**Combined coverage.py score: 91.36%.**
 
 Measured on macOS arm64, CPython 3.14.7 with coverage.py 7.16.2 against the
 0.1.0 release candidate. The full `tests/` suite includes loopback FTP and FTPS. Measurement covers

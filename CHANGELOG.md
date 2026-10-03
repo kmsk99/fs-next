@@ -23,7 +23,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Complete TLS shutdown for streamed FTPS writes before waiting for transfer
   completion, fixing timeouts during worker-thread uploads; close both sockets
-  when TLS shutdown fails.
+  when TLS shutdown fails. Complete pending uploads before seek/reconnect to
+  prevent stale FTPS reads and retained server file handles on Windows.
 
 - Parse yearless FTP LIST dates with an explicit current year; handle invalid
   dates without breaking listings and preserve explicit year 1900.

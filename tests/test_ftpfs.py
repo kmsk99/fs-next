@@ -73,6 +73,31 @@ class LocalFTPServer:
 
 
 class TestFTPFileClose(unittest.TestCase):
+    def test_seek_finishes_tls_write_before_reconnecting(self):
+        storage = FTPFS("unused.invalid", tls=True)
+        first, second = mock.Mock(), mock.Mock()
+        with mock.patch.object(storage, "_open_ftp", side_effect=[first, second]):
+            stream = FTPFile(storage, "file", "w")
+            calls = mock.Mock()
+            stream._write_conn = calls.connection
+            calls.attach_mock(first, "first")
+            calls.attach_mock(second, "second")
+            stream.seek(4)
+            self.assertEqual(
+                calls.mock_calls,
+                [
+                    mock.call.connection.unwrap(),
+                    mock.call.connection.close(),
+                    mock.call.first.voidresp(),
+                    mock.call.first.quit(),
+                    mock.call.first.close(),
+                    mock.call.second.voidcmd("TYPE I"),
+                ],
+            )
+            self.assertEqual(stream.tell(), 4)
+            stream.close()
+        storage.close()
+
     def test_tls_shutdown_precedes_completion_response(self):
         storage = FTPFS("unused.invalid", tls=True)
         client = mock.Mock()

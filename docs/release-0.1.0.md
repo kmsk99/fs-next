@@ -61,8 +61,10 @@ This caught a real defect: worker uploads through FTPFile closed a TLS data
 socket without the TLS shutdown used by `ftplib.FTP_TLS.storbinary`. The server
 could fail to complete a transfer and the client timed out. Completing TLS
 shutdown before waiting for the transfer response fixes workers=1/2/4 uploads.
-Additional regressions verify shutdown order and closure of both sockets when
-TLS shutdown raises. The encrypted round trip also checks reopening and Unicode.
+Windows CI also exposed stale reads when seeking immediately after a write:
+`seek()` now completes the pending upload before reconnecting. Additional
+regressions verify shutdown order, seek ordering and closure of both sockets
+when TLS shutdown raises. The encrypted round trip also checks reopening and Unicode.
 
 The fixture validates encryption and filesystem behavior on loopback. It does
 not certify public-server interoperability, certificate trust configuration,
@@ -70,7 +72,7 @@ firewall/NAT behavior or arbitrary server implementations.
 
 ## Release validation
 
-- Local macOS CPython 3.14.7: **2,756 passed, 30 skipped, 10 third-party warnings**,
+- Local macOS CPython 3.14.7: **2,757 passed, 30 skipped, 10 third-party warnings**,
   plus three passing subtests. Project deprecations, unraisable exceptions and
   unhandled thread exceptions are errors. Python 3.10 FTP/FTPS checks also pass.
 - Required release workflow: 15 full-suite OS/Python combinations
@@ -80,8 +82,8 @@ firewall/NAT behavior or arbitrary server implementations.
 - Wheel/sdist metadata, fresh installed-wheel smoke and the full suite using
   installed package imports are checked before publishing.
 - Adapted Sphinx documentation builds with warnings treated as errors.
-- Coverage on macOS CPython 3.14.7: **92.80% statements** (4,978 / 5,364),
-  **86.09% branches** (1,238 / 1,438), **91.38% combined**. The scope remains
+- Coverage on macOS CPython 3.14.7: **92.77% statements** (4,980 / 5,368),
+  **86.07% branches** (1,236 / 1,436), **91.36% combined**. The scope remains
   `fs/` excluding `fs/test.py`, with 91 existing excluded lines and no subprocess
   coverage. The additional skip is FTPS's unknown case sensitivity; see the
   [earlier skip review](test-review.md) for the other 29.
