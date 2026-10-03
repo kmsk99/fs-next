@@ -14,7 +14,7 @@ file, then install into a fresh environment. For the first stable release:
 python -m venv .venv-fsnext
 # POSIX; on Windows use .venv-fsnext\Scripts\activate
 . .venv-fsnext/bin/activate
-python -m pip install fs-next==0.1.0
+python -m pip install fs-next==0.1.1
 python -m pip check
 python -c 'from fs import open_fs; f = open_fs("mem://"); f.writetext("hello.txt", "hello"); assert f.readtext("hello.txt") == "hello"; f.close()'
 ```

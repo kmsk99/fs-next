@@ -1,5 +1,13 @@
 # Coverage snapshot
 
+## Stable 0.1.1 audit
+
+Clean macOS CPython 3.14.7 measurement: **4,985 / 5,373 statements (92.78%)**,
+**1,237 / 1,438 branches (86.02%)**, **91.35% combined**. Full suite: 2,760 passed,
+30 skipped. The new 3.15 hash branch is exercised by a separate real 3.15 suite;
+it is not included in this single-runtime coverage result. Original scope and
+91 existing exclusions remain. See [0.1.1 audit](release-0.1.1.md).
+
 ## Stable 0.1.0 audit
 
 Measured 2026-10-04 on macOS CPython 3.14.7 with coverage.py 7.16.2 after adding

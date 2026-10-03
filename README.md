@@ -25,18 +25,18 @@ with open_fs("mem://") as storage:
 
 ## At a glance
 
-Release: **0.1.0**, first stable FS Next release. Audit and local measurements: 2026-10-04.
-See the [release audit](docs/release-0.1.0.md) for the comparison with the actual PyPI `fs==2.4.16` package.
+Release: **0.1.1**, with the complete published upstream regression suite. Audit and local measurements: 2026-10-04.
+See the [release audit](docs/release-0.1.1.md) for the comparison with the actual PyPI `fs==2.4.16` package.
 
 | Measure | Current status | What it means |
 | --- | --- | --- |
 | Upstream source retained | **57 / 57 Python modules** | All upstream `fs/**/*.py` paths remain; no original public definitions were removed |
-| Full suite | **2,757 passed · 30 skipped** | macOS / Python 3.14 snapshot; platform-specific counts can differ |
-| Test coverage | **92.77% statements · 86.07% branches** | Measured execution coverage; scope and reproduction below |
-| Compatibility matrix | **15 required jobs** | Linux, macOS, Windows × Python 3.10–3.14; separate 3.15 preview |
+| Full suite | **2,760 passed · 30 skipped** | macOS / Python 3.14 snapshot; platform-specific counts can differ |
+| Test coverage | **92.78% statements · 86.02% branches** | Measured execution coverage; scope and reproduction below |
+| Compatibility matrix | **15 required jobs** | Linux, macOS, Windows × Python 3.10–3.14; 3.15 preview also gates publishing |
 | External plugin probe | **2 plugins** | pyfatfs API probe; migrated S3 plugin with normal pip resolution and emulator integration |
 | Roadmap checklist | **13 / 15 done (87%)** | Current development checklist below, not effort or production readiness |
-| Release | **Stable 0.1.0** | [PyPI](https://pypi.org/project/fs-next/0.1.0/) · [Release notes](https://github.com/kmsk99/fs-next/releases/tag/v0.1.0) |
+| Release | **Stable 0.1.1** | [PyPI](https://pypi.org/project/fs-next/0.1.1/) · [Release notes](https://github.com/kmsk99/fs-next/releases/tag/v0.1.1) |
 
 ## Install
 
@@ -45,7 +45,7 @@ Use a fresh **Python 3.10+** virtual environment:
 ```sh
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
-python -m pip install fs-next==0.1.0
+python -m pip install fs-next==0.1.1
 ```
 
 **Do not install `fs` and `fs-next` together.** Both distributions provide the
@@ -58,15 +58,15 @@ See the [migration guide](docs/migration.md) before changing existing environmen
 
 Python **3.10 remains the minimum**; every later CPython minor is a support
 target. Required CI covers 3.10–3.14 on Linux/macOS/Windows, with a separate
-3.15 preview workflow. See the [support policy](docs/support-policy.md) for the
+3.15 preview workflow that also gates publishing. See the [support policy](docs/support-policy.md) for the
 difference between configured checks, verified results and future support.
 
 The [migration guide](docs/migration.md) includes a locally adapted S3 plugin
 installed with normal dependency resolution and checked with `pip check`.
 Its integration probe uses an S3 emulator. The [test review](docs/test-review.md)
 documents new FTP date/ZIP regressions, Python 3.15 doctest compatibility,
-remaining skips and third-party warnings. The [release audit](docs/release-0.1.0.md)
-adds FTPS transfer checks and the upstream API/behavior comparison.
+remaining skips and third-party warnings. The [release audit](docs/release-0.1.1.md)
+adds the original PyPI regression suite and resolves the 3.15 FTPS/hash failure.
 
 ## Feature coverage
 
@@ -93,23 +93,24 @@ below were built by the upstream contributors and are inherited here.
 
 ### What FS Next changes
 
-| Area | Upstream baseline | FS Next 0.1.0 |
+| Area | Upstream baseline | FS Next 0.1.1 |
 | --- | --- | --- |
 | Runtime packaging | `pkg_resources` and setuptools required | Standard-library `pkgutil` and `importlib.metadata`; no runtime setuptools |
 | Absolute FS URLs | Uses `pathname2url` | Preserves FS URL paths across the Python 3.14 behavior change |
 | FTP cleanup | Finalization can wait for a server response; unused close can connect | Nonblocking socket cleanup during finalization, explicit close handling, failed-opener cleanup |
 | FTPS transfers | TLS data shutdown could time out in worker uploads | Complete TLS shutdown before the transfer response; close sockets on failure |
+| Hash errors on Python 3.15 | Unsupported algorithms can leave OpenSSL error state on the calling thread | Isolate hash construction; preserve valid aliases and TLS connections |
 | Test compatibility | Older unittest aliases and pyftpdlib test internals | Modern assertions and public pyftpdlib server API |
 | Distribution | `fs` / `import fs` | `fs-next` / `import fs`; package dependency names still differ |
 
 ## Test coverage
 
-**92.77% statement coverage (4,980 / 5,368) · 86.07% branch coverage (1,236 / 1,436).**
+**92.78% statement coverage (4,985 / 5,373) · 86.02% branch coverage (1,237 / 1,438).**
 
-**Combined coverage.py score: 91.36%.**
+**Combined coverage.py score: 91.35%.**
 
 Measured on macOS arm64, CPython 3.14.7 with coverage.py 7.16.2 against the
-0.1.0 release candidate. The full `tests/` suite includes loopback FTP and FTPS. Measurement covers
+0.1.1 release candidate. The full `tests/` suite includes loopback FTP and FTPS. Measurement covers
 `fs/`, excluding the reusable `fs/test.py` test helper, using the existing
 coverage exclusions in [setup.cfg](setup.cfg). Subprocess-only execution is not
 collected. This is a single-platform snapshot, not merged coverage across CI.
@@ -117,7 +118,7 @@ collected. This is a single-platform snapshot, not merged coverage across CI.
 | Validation | Result | Evidence |
 | --- | --- | --- |
 | Full cross-platform suite | 15 required jobs | [Compatibility workflow](https://github.com/kmsk99/fs-next/actions/workflows/test.yml) |
-| Upstream parity | API inventory and deterministic installed-package results match | [Audit](docs/release-0.1.0.md) |
+| Upstream parity | Original PyPI regression suite, API inventory and installed behavior | [Audit](docs/release-0.1.1.md) |
 | Finalizer/thread errors | Treated as test failures | [CI configuration](.github/workflows/test.yml) |
 | Third-party entry point | pyfatfs 1.1.0 passed on 3.10 / 3.14 | [Probe](scripts/check_pyfatfs.py); installed with `--no-deps`, not a resolver compatibility claim |
 | Published wheel | Fresh PyPI installation passed without setuptools | [Smoke check](scripts/check_wheel.py): memory, disk, ZIP, Unicode paths |
@@ -137,7 +138,7 @@ python -m coverage report
 
 **Remaining gaps:** 30 tests are skipped in the macOS snapshot, deprecated API
 warnings remain, and remote services, arbitrary plugins and production workloads
-need further validation. See the [release audit](docs/release-0.1.0.md).
+need further validation. See the [release audit](docs/release-0.1.1.md).
 
 ## Roadmap
 
@@ -175,7 +176,7 @@ tracks this checklist, independently of inherited features and test coverage.
 - [x] Review skipped tests and uncovered branches; add regressions for identified gaps.
 - [x] Resolve remaining deprecated API use and review runtime dependencies. [Review and third-party warnings](docs/test-review.md).
 - [x] Adapt upstream API documentation and publish a migration guide with tested examples. Sphinx documentation builds with warnings treated as errors.
-- [x] Complete release-candidate validation, changelog and support policy before a stable release. [0.1.0 audit](docs/release-0.1.0.md).
+- [x] Complete release-candidate validation, changelog and support policy before a stable release. [0.1.0 audit](docs/release-0.1.1.md).
 
 ## Develop and contribute
 

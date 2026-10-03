@@ -13,7 +13,7 @@ unreleased interpreter has already passed tests.
   probes. New stable Python minors must be added to this required matrix.
 - The separate Python preview workflow tests 3.15 on all three systems on
   pushes, pull requests and weekly. It allows prerelease interpreters and reports
-  failures visibly; it is not part of the release publishing gate.
+  failures visibly. From 0.1.1 it is also a required release publishing gate.
 - When a new minor becomes stable, promote it to the required matrix and point
   the preview job at the next available development minor.
 - PyPy, free-threaded builds and other implementations have no verification
@@ -31,9 +31,9 @@ release scheduled for October 9 in [PEP 790](https://peps.python.org/pep-0790/).
 
 ## Evidence
 
-The 0.1.0 release audit compares with the published `fs==2.4.16` package and
+The 0.1.1 release audit compares with the published `fs==2.4.16` package and
 runs the expanded matrix, plugin probes and installed-wheel checks. See the
-[release audit](release-0.1.0.md) and GitHub Actions for release-specific results.
+[release audit](release-0.1.1.md) and GitHub Actions for release-specific results.
 
 Patch releases in the 0.1.x series aim to preserve documented API compatibility.
 Any intentional incompatible change will be documented in a new minor version.
@@ -49,8 +49,10 @@ a rejected `hashlib.new("nohash")` call is followed by an SSL `[EVP] unsupported
 error on the existing FTPS control connection. The same sequence reproduces
 locally on 3.15.0rc1 with the standard-library `ftplib.FTP_TLS` client, without
 FS Next filesystem operations. This narrows the issue to the runtime/TLS stack;
-the exact upstream cause has not yet been established. The preview test remains
-enabled and failing visibly. Full 3.15 compatibility is not yet verified.
+CPython's unsupported-algorithm error path leaves OpenSSL error state on the
+calling thread. Version 0.1.1 isolates hash construction in a short-lived thread
+on Python 3.15+, retaining algorithm aliases and exception types. The complete
+local 3.15rc1 suite now passes; 3.15 CI must pass before publishing 0.1.1.
 Python 3.10–3.14 pass the same regression in the required matrix.
 
 Evidence: [preview run](https://github.com/kmsk99/fs-next/actions/runs/37133094532)

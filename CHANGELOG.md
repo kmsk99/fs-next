@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## FS Next 0.1.1 — 2026-10-04
+
+- Run the complete regression suite from the latest published PyPI `fs==2.4.16`
+  sdist against the installed candidate, including the original `fs.test` helper.
+  Adapt four discovery mock targets and join the legacy test pool; retain all assertions.
+- Preserve the original `scandir` install extra (empty on supported Python).
+- Fix Python 3.15 FTPS failures after unsupported hash requests by isolating
+  OpenSSL-backed hash construction from the caller's TLS error state. Preserve
+  supported algorithm aliases and original exception behavior.
+- Add hash alias/error and persistent FTPS connection regressions. Require both
+  the original upstream suite and Python 3.15 preview checks before publishing.
+- See [the complete audit](docs/release-0.1.1.md) for artifact hashes, feature
+  mapping, test adaptations and validation results.
+
 ## FS Next 0.1.0 — 2026-10-04
 
 ### Added
