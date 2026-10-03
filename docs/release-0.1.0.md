@@ -78,7 +78,9 @@ firewall/NAT behavior or arbitrary server implementations.
 - Required release workflow: 15 full-suite OS/Python combinations
   (Linux/macOS/Windows × 3.10–3.14), five S3 migration probes, two pyfatfs probes
   and one upstream API/behavior comparison.
-- Python 3.15 preview is tested separately on all three operating systems.
+- Python 3.15 preview has one FTPS/hash error-path failure on all three operating
+  systems, also reproduced with the standard-library FTP_TLS client. Full 3.15
+  compatibility is not yet verified; see the [known preview issue](support-policy.md#known-preview-issue-for-010).
 - Wheel/sdist metadata, fresh installed-wheel smoke and the full suite using
   installed package imports are checked before publishing.
 - Adapted Sphinx documentation builds with warnings treated as errors.

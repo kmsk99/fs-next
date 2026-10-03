@@ -41,3 +41,17 @@ Third-party package dependencies still need their own migration from `fs`.
 
 Raising the minimum version requires a separately documented project decision.
 An upstream Python EOL does not automatically remove FS Next compatibility.
+
+## Known preview issue for 0.1.0
+
+CPython 3.15.0rc2 fails `TestFTPS.test_hash` on Linux, macOS and Windows:
+a rejected `hashlib.new("nohash")` call is followed by an SSL `[EVP] unsupported`
+error on the existing FTPS control connection. The same sequence reproduces
+locally on 3.15.0rc1 with the standard-library `ftplib.FTP_TLS` client, without
+FS Next filesystem operations. This narrows the issue to the runtime/TLS stack;
+the exact upstream cause has not yet been established. The preview test remains
+enabled and failing visibly. Full 3.15 compatibility is not yet verified.
+Python 3.10–3.14 pass the same regression in the required matrix.
+
+Evidence: [preview run](https://github.com/kmsk99/fs-next/actions/runs/37133094532)
+and [required checks](https://github.com/kmsk99/fs-next/actions/runs/37133094550).
