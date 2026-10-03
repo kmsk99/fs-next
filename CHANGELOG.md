@@ -6,7 +6,25 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## Unreleased
+## FS Next — Unreleased
+
+### Added
+
+- Required Python 3.11/3.13 CI coverage and a separate Python 3.15 preview
+  workflow, retaining the minimum Python version of 3.10.
+- An S3 plugin dependency migration recipe and emulator probe with normal pip
+  resolution, plus Python support and regression review documentation.
+
+### Fixed
+
+- Parse yearless FTP LIST dates with an explicit current year; handle invalid
+  dates without breaking listings and preserve explicit year 1900.
+- Replace deprecated UTC datetime constructors in FTP timestamps and ZIP
+  metadata fallback without changing their intended UTC semantics.
+- Run doctests through the public unittest lifecycle for Python 3.15, preserving
+  failure reporting and setup/teardown behavior.
+
+## Upstream unreleased changes inherited by FS Next
 
 
 ### Added

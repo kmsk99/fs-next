@@ -1,5 +1,14 @@
 # Coverage snapshot
 
+Follow-up development measurement (2026-10-04, macOS CPython 3.14.7,
+coverage.py 7.16.2): **4,972 / 5,358 statements (92.80%)** and
+**1,235 / 1,436 branches (86.00%)**, combined **91.36%**. The suite passed
+2,667 tests with 29 skips and 7 third-party warnings. Scope and exclusions are
+unchanged; see [test review](test-review.md) for the added regressions. The
+per-module table below remains the original release baseline.
+
+## Published 0.1.0a1 baseline
+
 Measured 2026-10-03 against `b7f6278da8ff9589d6a27c132cefb439cf8279b7` (0.1.0a1).
 
 - Environment: macOS arm64, CPython 3.14.7, coverage.py 7.16.2.

@@ -34,7 +34,7 @@ Snapshot: **0.1.0a1**, source [`b7f6278`](https://github.com/kmsk99/fs-next/comm
 | Test coverage | **92.8% statements · 85.9% branches** | Measured execution coverage; scope and reproduction below |
 | Compatibility matrix | **9 / 9 passing** | Linux, macOS, Windows × Python 3.10, 3.12, 3.14 |
 | External plugin probe | **1 plugin / 2 Python versions** | pyfatfs 1.1.0, Python 3.10 and 3.14; dependency migration remains open |
-| Roadmap checklist | **8 / 15 done (53%)** | Equal-weight tasks below, not effort or production readiness |
+| Roadmap checklist | **11 / 15 done (73%)** | Current development checklist below, not effort or production readiness |
 | Release | **Published alpha** | [PyPI](https://pypi.org/project/fs-next/0.1.0a1/) · [Release notes](https://github.com/kmsk99/fs-next/releases/tag/v0.1.0a1) |
 
 ## Install
@@ -52,6 +52,19 @@ python -m pip install fs-next==0.1.0a1
 `from fs import ...`, but a package declaring `Requires-Dist: fs` will still ask
 pip to install upstream `fs`. Downstream dependency metadata must be migrated.
 This alpha is intended for isolated evaluation.
+
+### Current development
+
+Python **3.10 remains the minimum**; every later CPython minor is a support
+target. Required CI covers 3.10–3.14 on Linux/macOS/Windows, with a separate
+3.15 preview workflow. See the [support policy](docs/support-policy.md) for the
+difference between configured checks, verified results and future support.
+
+The [migration guide](docs/migration.md) includes a locally adapted S3 plugin
+installed with normal dependency resolution and checked with `pip check`.
+Its integration probe uses an S3 emulator. The [test review](docs/test-review.md)
+documents new FTP date/ZIP regressions, Python 3.15 doctest compatibility,
+remaining skips and third-party warnings. These changes are not yet on PyPI.
 
 ## Feature coverage
 
@@ -124,7 +137,7 @@ need further validation. See [validation notes](docs/fs-next-status.md).
 
 ## Roadmap
 
-**`████████░░░░░░░` 8 / 15 tasks complete · 53%**
+**`███████████░░░░` 11 / 15 tasks complete · 73%**
 
 This is the initial maintenance roadmap, with future work proposed below and no
 promised dates. Each checkbox counts once; tasks differ in size. The percentage
@@ -133,8 +146,8 @@ tracks this checklist, independently of inherited features and test coverage.
 | Milestone | Progress | Status |
 | --- | --- | --- |
 | 1. Modern Python alpha | **6/6 · 100%** | ✅ Shipped in 0.1.0a1 |
-| 2. Compatibility evidence | **2/5 · 40%** | 🟡 Next focus |
-| 3. Stable release preparation | **0/4 · 0%** | ○ Planned |
+| 2. Compatibility evidence | **3/5 · 60%** | 🟡 Remote backend validation remains |
+| 3. Stable release preparation | **2/4 · 50%** | 🟡 Documentation and RC remain |
 
 ### 1. Modern Python alpha — 6/6
 
@@ -145,19 +158,19 @@ tracks this checklist, independently of inherited features and test coverage.
 - [x] Pass the full suite on 3 operating systems × 3 Python versions.
 - [x] Publish an alpha via Trusted Publishing and verify a fresh PyPI install.
 
-### 2. Compatibility evidence — 2/5
+### 2. Compatibility evidence — 3/5
 
 - [x] Exercise a real external plugin and document its dependency-name conflict.
 - [x] Publish a reproducible coverage baseline and capability matrix.
-- [ ] Add Python 3.11 and 3.13 to CI and publish the complete support policy.
-- [ ] Validate representative S3/SSH plugins and document clean dependency migration.
+- [x] Add Python 3.11 and 3.13 to CI and publish the [support policy](docs/support-policy.md).
+- [ ] Validate representative S3/SSH plugins and document clean dependency migration. [S3 emulator and local metadata migration completed](docs/migration.md); SSH remains.
 - [ ] Validate FTPS and representative external FTP servers beyond loopback tests.
 
-### 3. Stable release preparation — 0/4
+### 3. Stable release preparation — 2/4
 
-- [ ] Review skipped tests and uncovered branches; add regressions for identified gaps.
-- [ ] Resolve remaining deprecated API use and review runtime dependencies.
-- [ ] Adapt upstream API documentation and publish a migration guide with tested examples.
+- [x] Review skipped tests and uncovered branches; add regressions for identified gaps.
+- [x] Resolve remaining deprecated API use and review runtime dependencies. [Review and third-party warnings](docs/test-review.md).
+- [ ] Adapt upstream API documentation and publish a migration guide with tested examples. [Migration guide completed](docs/migration.md); full API documentation adaptation remains.
 - [ ] Complete release-candidate validation, changelog and support policy before a stable release.
 
 ## Develop and contribute

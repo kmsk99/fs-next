@@ -1,5 +1,14 @@
 # FS Next alpha validation
 
+## Follow-up development
+
+The sections below describe the published 0.1.0a1 baseline. Subsequent work adds
+Python 3.11/3.13 to required CI, Python 3.15 preview checks, FTP date and ZIP
+fallback regressions, and an S3 plugin migration probe. See the
+[support policy](support-policy.md), [migration guide](migration.md) and
+[test review](test-review.md) for current development evidence. Python 3.10
+remains supported. This follow-up is not a new published package release.
+
 ## Provenance
 
 - Upstream: https://github.com/PyFilesystem/pyfilesystem2
