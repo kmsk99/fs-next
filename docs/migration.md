@@ -169,6 +169,23 @@ chain that requires `fs` must migrate its metadata. Keep its import names and
 The earlier pyfatfs `--no-deps` probe tests API behavior only and leaves an
 unsatisfied dependency. Do not use it as a normal installation recipe.
 
+### Independent S3 distribution: publication pending
+
+[`fs-s3fs-next`](https://github.com/kmsk99/fs-s3fs-next) is the independent
+maintenance package being prepared for PyPI. It retains `fs_s3fs` imports and
+the `s3://` opener, requires Python >=3.10 and depends directly on `fs-next`.
+Its publication does not depend on acceptance of the upstream PR.
+
+The 0.1.0 wheel and source distribution each pass 180 installed-package tests
+locally. Public CI covers Python 3.10–3.15 preview on Linux, macOS and Windows.
+**PyPI publication is pending**; use the verified Git candidate below until
+publication and a fresh public-index installation have been confirmed.
+
+When migrating, replace both distribution declarations (`fs-s3fs` with
+`fs-s3fs-next`, and `fs` with `fs-next`) and regenerate the lock in a fresh
+environment. Neither pair can coexist safely because the import files overlap.
+Transitive dependencies requiring the old distribution names must also migrate.
+
 ### S3: install the verified migration candidate
 
 The proposed change is [upstream PR #96](https://github.com/PyFilesystem/s3fs/pull/96).

@@ -10,7 +10,7 @@ fresh environments, lock changes, verification and rollback. All three direct
 migration recipes passed in disposable Python 3.14 projects. Documentation builds
 with warnings treated as errors.
 
-## 2. S3 normal installation — tested candidate, upstream review pending
+## 2. S3 normal installation — independent publication in preparation
 
 [PR #96](https://github.com/PyFilesystem/s3fs/pull/96) proposes conditional
 `fs-next` dependencies on Python 3.10+, with the old `fs` dependency retained
@@ -19,9 +19,15 @@ copy/move and stream fixes resolve them. Nine OS/Python CI jobs pass all 177
 contract/metadata tests. The [guide](migration.md#s3-install-the-verified-migration-candidate)
 provides a pinned public Git install using normal dependency resolution.
 
-No new upstream PyPI release has been published. Upstream acceptance/release is
-an external prerequisite for an ordinary `pip install fs-s3fs` migration.
-A separately named public fork would need its own ownership and release setup.
+The independent [`fs-s3fs-next` repository](https://github.com/kmsk99/fs-s3fs-next)
+now provides a Python >=3.10 package with an unconditional `fs-next` dependency.
+Its wheel and sdist each pass 180 local installed-package tests. Cross-platform
+CI and a release workflow are configured. PyPI account authentication and
+publisher registration are still required before public publication.
+
+This independent distribution is the primary installation route being prepared;
+upstream PR review is not a prerequisite. No new PyPI plugin release has yet
+been published. The pinned Git candidate remains available in the meantime.
 
 ## 3. Downstream pilots — first tested proposal submitted
 
