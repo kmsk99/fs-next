@@ -152,7 +152,7 @@ Checked 2026-10-06. “API probe” is not a supported normal installation path.
 | Distribution | Tested version | Current migration status |
 | --- | --- | --- |
 | Built-in memory/local/temp/AppFS/ZIP/TAR/FTP/FTPS | fs-next 0.1.1 | No external plugin needed; original and modern regression suites pass |
-| `fs-s3fs` | 1.1.1, adapted locally as 1.1.1+fsnext.1 | Normal resolver and S3 emulator probe pass for the local build; public upstream still requires `fs` |
+| `fs-s3fs` | Fork commit `49ecaab` | Normal pip installation and 177 emulator/metadata tests pass; [upstream PR #96](https://github.com/PyFilesystem/s3fs/pull/96) is awaiting review; PyPI 1.1.1 still requires `fs` |
 | `pyfatfs` | 1.1.0 | FAT API probe passes; public package still requires `fs~=2.4` |
 | `fs.sshfs` | 1.0.2 | Public package requires `fs~=2.2`; migration and SSH integration not yet verified |
 
@@ -169,7 +169,56 @@ chain that requires `fs` must migrate its metadata. Keep its import names and
 The earlier pyfatfs `--no-deps` probe tests API behavior only and leaves an
 unsatisfied dependency. Do not use it as a normal installation recipe.
 
-### Reproducible S3 migration example
+### S3: install the verified migration candidate
+
+The proposed change is [upstream PR #96](https://github.com/PyFilesystem/s3fs/pull/96).
+Until it is accepted and released, the public PyPI `fs-s3fs==1.1.1` is **not**
+the migrated package. A tested candidate is available from the independent fork
+at the immutable commit below. Git must be installed for this VCS requirement.
+
+In a fresh Python 3.10+ environment:
+
+```sh
+python -m pip install "fs-s3fs @ git+https://github.com/kmsk99/s3fs.git@49ecaabce3e1dc8c6c6bc4eb1f9353e4db4f2885"
+python -m pip check
+python -c "from importlib.metadata import version; print(version('fs-next'))"
+python -m pip show fs
+```
+
+The last command should report that `fs` is absent. This uses normal dependency
+resolution, with no `--no-deps` workaround. Keep the **full VCS requirement** in
+your dependency declaration and lock; replacing it with `fs-s3fs==1.1.1` selects
+the unmigrated PyPI build. In the clean environment, uv accepts the named
+requirement; Poetry takes the Git URL directly:
+
+```sh
+uv add "fs-s3fs @ git+https://github.com/kmsk99/s3fs.git@49ecaabce3e1dc8c6c6bc4eb1f9353e4db4f2885"
+# Or, for a Poetry project:
+poetry add "git+https://github.com/kmsk99/s3fs.git@49ecaabce3e1dc8c6c6bc4eb1f9353e4db4f2885"
+```
+
+Inspect and commit the resulting declaration and lock file.
+The fork retains the upstream version string; the commit/direct URL identifies
+the tested candidate, not the version number alone.
+
+The candidate fixes copy/move `preserve_time` argument handling, safe same-path
+operations, and binary stream `mode` / `readinto`. S3 controls LastModified;
+timestamp preservation remains best effort. CI passes Linux/macOS/Windows ×
+Python 3.10/3.14/3.15 preview, with **177 tests per job** covering roots, prefixes
+and dependency markers. A fresh public VCS installation passes the same suite.
+See [CI evidence](https://github.com/kmsk99/s3fs/actions/runs/37420836208).
+
+This is an upstream review candidate, not an official fs-s3fs release. Moto
+validates emulated S3 behavior; run your application's staging tests against
+its actual service before deploying. Python below 3.10 retains the original
+`fs` dependency through environment markers, but those old runtimes are not
+newly certified by this matrix.
+
+### Earlier local S3 metadata probe
+
+The following older probe only changed metadata and exercised basic operations.
+Use the tested candidate above for the copy/move and stream compatibility fixes.
+
 
 This example adapts [fs-s3fs 1.1.1](https://pypi.org/project/fs-s3fs/1.1.1/)
 locally. Its original source, MIT license and credits remain intact. The helper
