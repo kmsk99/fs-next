@@ -152,7 +152,8 @@ Checked 2026-10-06. “API probe” is not a supported normal installation path.
 | Distribution | Tested version | Current migration status |
 | --- | --- | --- |
 | Built-in memory/local/temp/AppFS/ZIP/TAR/FTP/FTPS | fs-next 0.1.1 | No external plugin needed; original and modern regression suites pass |
-| `fs-s3fs` | Fork commit `49ecaab` | Normal pip installation and 177 emulator/metadata tests pass; [upstream PR #96](https://github.com/PyFilesystem/s3fs/pull/96) is awaiting review; PyPI 1.1.1 still requires `fs` |
+| `fs-s3fs-next` | 0.1.0 | Independent PyPI release; normal installation with fs-next; 180 tests per environment |
+| `fs-s3fs` | 1.1.1 | Original PyPI distribution still requires `fs`; replace with `fs-s3fs-next` in a fresh environment |
 | `pyfatfs` | 1.1.0 | FAT API probe passes; public package still requires `fs~=2.4` |
 | `fs.sshfs` | 1.0.2 | Public package requires `fs~=2.2`; migration and SSH integration not yet verified |
 
@@ -169,24 +170,48 @@ chain that requires `fs` must migrate its metadata. Keep its import names and
 The earlier pyfatfs `--no-deps` probe tests API behavior only and leaves an
 unsatisfied dependency. Do not use it as a normal installation recipe.
 
-### Independent S3 distribution: publication pending
+### S3: install the independent PyPI package
 
-[`fs-s3fs-next`](https://github.com/kmsk99/fs-s3fs-next) is the independent
-maintenance package being prepared for PyPI. It retains `fs_s3fs` imports and
-the `s3://` opener, requires Python >=3.10 and depends directly on `fs-next`.
-Its publication does not depend on acceptance of the upstream PR.
+[`fs-s3fs-next` 0.1.0](https://pypi.org/project/fs-s3fs-next/0.1.0/) is now
+available from PyPI. It retains `from fs_s3fs import S3FS` and the `s3://`
+opener, requires Python >=3.10 and depends directly on `fs-next`.
+It is an independent maintenance fork of PyFilesystem/s3fs, preserving its
+MIT license and history. Installation does not depend on upstream PR approval.
 
-The 0.1.0 wheel and source distribution each pass 180 installed-package tests
-locally. Public CI covers Python 3.10–3.15 preview on Linux, macOS and Windows.
-**PyPI publication is pending**; use the verified Git candidate below until
-publication and a fresh public-index installation have been confirmed.
+In a fresh environment, use your package manager:
 
-When migrating, replace both distribution declarations (`fs-s3fs` with
-`fs-s3fs-next`, and `fs` with `fs-next`) and regenerate the lock in a fresh
-environment. Neither pair can coexist safely because the import files overlap.
-Transitive dependencies requiring the old distribution names must also migrate.
+```sh
+python -m pip install fs-s3fs-next==0.1.0
+# Or:
+uv add fs-s3fs-next==0.1.0
+# Or:
+poetry add fs-s3fs-next==0.1.0
+```
 
-### S3: install the verified migration candidate
+Replace both old distribution declarations (`fs-s3fs` with `fs-s3fs-next`,
+and `fs` with `fs-next`) before resolving the complete project, then regenerate
+the lock. Neither pair can coexist safely because their import files overlap.
+Transitive dependencies requiring the old names must also migrate; installing
+the new package alone does not satisfy their old requirements.
+
+```sh
+python -m pip check
+python -c "from importlib.metadata import version; print(version('fs-s3fs-next'), version('fs-next'))"
+python -m pip show fs fs-s3fs
+```
+
+The last command should report both original distributions absent. Run the
+application's own S3 checks before deployment. For rollback, restore the old
+declarations and lock into another fresh environment.
+
+The wheel and source distribution each pass 180 installed-package tests.
+[Release CI](https://github.com/kmsk99/fs-s3fs-next/actions/runs/37426658536)
+covers Python 3.10–3.15 preview on Linux, macOS and Windows. Tests use Moto,
+not live AWS; IAM policies and provider-specific behavior need application
+validation. S3 LastModified timestamps cannot be preserved with `setinfo`.
+
+### Earlier Git candidate for upstream review
+
 
 The proposed change is [upstream PR #96](https://github.com/PyFilesystem/s3fs/pull/96).
 Until it is accepted and released, the public PyPI `fs-s3fs==1.1.1` is **not**

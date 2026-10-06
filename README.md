@@ -61,9 +61,10 @@ target. Required CI covers 3.10–3.14 on Linux/macOS/Windows, with a separate
 3.15 preview workflow that also gates publishing. See the [support policy](docs/support-policy.md) for the
 difference between configured checks, verified results and future support.
 
-The [migration guide](docs/migration.md) includes a locally adapted S3 plugin
-installed with normal dependency resolution and checked with `pip check`.
-Its integration probe uses an S3 emulator. The [test review](docs/test-review.md)
+The [migration guide](docs/migration.md) covers the independently published
+[`fs-s3fs-next`](https://pypi.org/project/fs-s3fs-next/) S3 plugin. Install it
+from PyPI with normal dependency resolution; existing `fs_s3fs` imports and
+`s3://` URLs remain compatible. Its integration tests use an S3 emulator. The [test review](docs/test-review.md)
 documents new FTP date/ZIP regressions, Python 3.15 doctest compatibility,
 remaining skips and third-party warnings. The [release audit](docs/release-0.1.1.md)
 adds the original PyPI regression suite and resolves the 3.15 FTPS/hash failure.
@@ -168,7 +169,7 @@ tracks this checklist, independently of inherited features and test coverage.
 - [x] Exercise a real external plugin and document its dependency-name conflict.
 - [x] Publish a reproducible coverage baseline and capability matrix.
 - [x] Add Python 3.11 and 3.13 to CI and publish the [support policy](docs/support-policy.md).
-- [ ] Validate representative S3/SSH plugins and document clean dependency migration. [S3 emulator and local metadata migration completed](docs/migration.md); SSH remains.
+- [ ] Validate representative S3/SSH plugins and document clean dependency migration. [S3 independent PyPI release and emulator tests completed](docs/migration.md#s3-install-the-independent-pypi-package); SSH remains.
 - [ ] Validate FTPS and representative external FTP servers beyond loopback tests. Loopback FTPS contract suite completed; hosted FTP remains.
 
 ### 3. Stable release preparation — 4/4

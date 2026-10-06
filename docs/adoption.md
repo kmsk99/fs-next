@@ -10,24 +10,28 @@ fresh environments, lock changes, verification and rollback. All three direct
 migration recipes passed in disposable Python 3.14 projects. Documentation builds
 with warnings treated as errors.
 
-## 2. S3 normal installation — independent publication in preparation
+## 2. S3 normal installation — independent PyPI release available
 
-[PR #96](https://github.com/PyFilesystem/s3fs/pull/96) proposes conditional
-`fs-next` dependencies on Python 3.10+, with the old `fs` dependency retained
-below that version. Whole-contract testing uncovered 24 root/prefix failures;
-copy/move and stream fixes resolve them. Nine OS/Python CI jobs pass all 177
-contract/metadata tests. The [guide](migration.md#s3-install-the-verified-migration-candidate)
-provides a pinned public Git install using normal dependency resolution.
+[`fs-s3fs-next` 0.1.0](https://pypi.org/project/fs-s3fs-next/0.1.0/) provides
+the normal PyPI installation route. It requires Python >=3.10 and depends on
+`fs-next`, preserving `fs_s3fs` imports and the `s3://` opener. The original
+MIT license and history are retained in the
+[independent repository](https://github.com/kmsk99/fs-s3fs-next).
 
-The independent [`fs-s3fs-next` repository](https://github.com/kmsk99/fs-s3fs-next)
-now provides a Python >=3.10 package with an unconditional `fs-next` dependency.
-Its wheel and sdist each pass 180 local installed-package tests. Cross-platform
-CI and a release workflow are configured. PyPI account authentication and
-publisher registration are still required before public publication.
+Wheel and sdist checks pass, and installed-package tests cover Python
+3.10–3.15 preview on Linux/macOS/Windows with 180 tests per environment.
+[Release CI](https://github.com/kmsk99/fs-s3fs-next/actions/runs/37426658536)
+gates PyPI publishing on these checks. A fresh public PyPI install was verified
+with dependency checks, the S3 opener and the same contract tests.
 
-This independent distribution is the primary installation route being prepared;
-upstream PR review is not a prerequisite. No new PyPI plugin release has yet
-been published. The pinned Git candidate remains available in the meantime.
+The [guide](migration.md#s3-install-the-independent-pypi-package) covers
+installation, distribution conflicts and rollback. Moto tests do not certify
+live AWS IAM or provider-specific behavior. Other packages that require the
+original distribution names still need dependency metadata changes.
+
+[Upstream PR #96](https://github.com/PyFilesystem/s3fs/pull/96) remains available
+for review, but its acceptance is not required to install the independent
+package. The original `fs-s3fs` PyPI distribution has not been replaced.
 
 ## 3. Downstream pilots — first tested proposal submitted
 
