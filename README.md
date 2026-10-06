@@ -6,7 +6,7 @@
 [![Compatibility](https://github.com/kmsk99/fs-next/actions/workflows/test.yml/badge.svg)](https://github.com/kmsk99/fs-next/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-[Install](#install) · [Feature coverage](#feature-coverage) · [Test coverage](#test-coverage) · [Roadmap](#roadmap) · [Original repository](https://github.com/PyFilesystem/pyfilesystem2)
+[Install](#install) · [Migrate from fs](docs/migration.md) · [Feature coverage](#feature-coverage) · [Test coverage](#test-coverage) · [Roadmap](#roadmap) · [Original repository](https://github.com/PyFilesystem/pyfilesystem2)
 
 > Built on **[PyFilesystem2](https://github.com/PyFilesystem/pyfilesystem2)** by
 > Will McGugan and the PyFilesystem2 contributors. FS Next preserves their code,
